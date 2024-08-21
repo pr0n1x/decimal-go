@@ -80,6 +80,17 @@ func Div(a, b Decimal) Decimal {
 	return MustFromUnits(value, a.precision)
 }
 
+// DivTail returns a division result and a tail (residual/remainder related to a precision)
+func DivTail(a, b Decimal) (Decimal, Decimal) {
+	coercePrecision(&a, &b)
+	value := &big.Int{}
+	tail := &big.Int{}
+	value.Mul(a.value, a.precision.Multiplier())
+	value.DivMod(value, b.value, tail)
+	tail.Div(tail, (a.precision - 1).Multiplier())
+	return MustFromUnits(value, a.precision), MustFromUnits(tail, a.precision+1)
+}
+
 func Mod(a, b Decimal) Decimal {
 	coercePrecision(&a, &b)
 	return MustFromUnits((&big.Int{}).Mod(a.value, b.value), a.precision)

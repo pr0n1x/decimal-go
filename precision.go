@@ -6,16 +6,16 @@ type Precision uint8
 
 // https://www.nist.gov/pml/owm/metric-si-prefixes
 const (
-	Milli Precision = (1 + iota) * 3
-	Micro
-	Nano
-	Pico
-	Femto
-	Atto
-	Zepto
-	Yocto
-	Ronto
-	Quecto
+	Milli  Precision = 3
+	Micro  Precision = 6
+	Nano   Precision = 9
+	Pico   Precision = 12
+	Femto  Precision = 15
+	Atto   Precision = 18
+	Zepto  Precision = 21
+	Yocto  Precision = 24
+	Ronto  Precision = 27
+	Quecto Precision = 30
 )
 
 func (p Precision) Zero() Decimal {
@@ -31,10 +31,11 @@ func (p Precision) Ten() Decimal {
 }
 
 func (p Precision) Multiplier() *big.Int {
-	var value big.Int
-	value.SetUint64(10)
-	value.Exp(&value, big.NewInt(int64(p)), nil)
-	return &value
+	return PrecisionMultiplier(p)
+}
+
+func (p Precision) Unit() Decimal {
+	return Unit(p)
 }
 
 func (p Precision) FromUnits(val *big.Int) (Decimal, error) {

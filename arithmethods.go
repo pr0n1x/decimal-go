@@ -24,6 +24,10 @@ func (d Decimal) DivMod(rhs Decimal) (div, mod Decimal) {
 	return DivMod(d, rhs)
 }
 
+func (d Decimal) DivTail(rhs Decimal) (div, tail Decimal) {
+	return DivTail(d, rhs)
+}
+
 func (d Decimal) Abs(rhs Decimal) Decimal {
 	return Div(d, rhs)
 }

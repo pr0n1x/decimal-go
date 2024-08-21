@@ -18,16 +18,27 @@ type Decimal struct {
 	precision Precision
 }
 
-func Zero(precision Precision) Decimal {
-	return MustFromUInt64(0, precision)
+func Zero(p Precision) Decimal {
+	return MustFromUInt64(0, p)
 }
 
-func One(precision Precision) Decimal {
-	return MustFromZUInt64(1, precision)
+func One(p Precision) Decimal {
+	return MustFromZUInt64(1, p)
 }
 
-func Ten(precision Precision) Decimal {
-	return MustFromZUInt64(10, precision)
+func Ten(p Precision) Decimal {
+	return MustFromZUInt64(10, p)
+}
+
+func Unit(p Precision) Decimal {
+	return MustFromUnits((&big.Int{}).SetUint64(1), p)
+}
+
+func PrecisionMultiplier(p Precision) *big.Int {
+	var value big.Int
+	value.SetUint64(10)
+	value.Exp(&value, big.NewInt(int64(p)), nil)
+	return &value
 }
 
 // Precision precision - max decimals digits
@@ -41,6 +52,18 @@ func (d Decimal) Units() *big.Int {
 		return big.NewInt(0)
 	}
 	return (&big.Int{}).Set(d.value)
+}
+
+// IncreasePrecision increases value precision
+func (d Decimal) IncreasePrecision(p Precision) (Decimal, error) {
+	precision := d.precision + 1
+	value := (&big.Int{}).Mul(d.value, p.Multiplier())
+	return FromUnits(value, precision)
+}
+
+// MustIncreasePrecision the same as IncreasePrecision but panics on error
+func (d Decimal) MustIncreasePrecision(p Precision) Decimal {
+	return must(d.IncreasePrecision(p))
 }
 
 func (d Decimal) Copy() Decimal {

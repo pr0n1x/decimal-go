@@ -83,3 +83,35 @@ func Test_SumHasMaxPrecision(t *testing.T) {
 		t.Fatal("invalid sum")
 	}
 }
+
+func Test_DivTail(t *testing.T) {
+	type fraction struct {
+		numerator   Decimal
+		denominator Decimal
+	}
+	for _, frac := range []fraction{
+		{numerator: MustParse("1.004", Milli),
+			denominator: MustParse("0.6", Milli)},
+		{numerator: MustParse("1.000000004", Quecto),
+			denominator: MustParse("0.6", Quecto)},
+		{numerator: MustParse("39.999999999999999999999999999999", Quecto),
+			denominator: MustParse("131072", Quecto)},
+	} {
+		numerator, denominator := frac.numerator, frac.denominator
+		res, tail := numerator.DivTail(denominator)
+		if tail.precision <= res.precision {
+			t.Fatal("invalid DivTail: tail precision should be greater than result precision")
+		}
+		if tail.precision-res.precision > 1 {
+			t.Fatal("invalid DivTail: tail and result precision difference should be equal to 1")
+		}
+		if n, err := res.IncreasePrecision(1); err != nil {
+			t.Fatal(err)
+		} else {
+			res = n
+		}
+		if res.Mul(denominator).Add(tail).Cmp(numerator) != 0 {
+			t.Fatal("invalid DivTail")
+		}
+	}
+}
