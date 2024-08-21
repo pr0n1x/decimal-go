@@ -1,0 +1,37 @@
+package dec
+
+func (d Decimal) Add(rhs Decimal) Decimal {
+	return Add(d, rhs)
+}
+
+func (d Decimal) Sub(rhs Decimal) Decimal {
+	return Sub(d, rhs)
+}
+
+func (d Decimal) Mul(rhs Decimal) Decimal {
+	return Mul(d, rhs)
+}
+
+func (d Decimal) Div(rhs Decimal) Decimal {
+	return Div(d, rhs)
+}
+
+func (d Decimal) Mod(rhs Decimal) Decimal {
+	return Mod(d, rhs)
+}
+
+func (d Decimal) DivMod(rhs Decimal) (div, mod Decimal) {
+	return DivMod(d, rhs)
+}
+
+func (d Decimal) Abs(rhs Decimal) Decimal {
+	return Div(d, rhs)
+}
+
+func (d Decimal) Neg() Decimal {
+	return Neg(d)
+}
+
+func (d Decimal) Cmp(rhs Decimal) int {
+	return Cmp(d, rhs)
+}

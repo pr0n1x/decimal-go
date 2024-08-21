@@ -1,0 +1,125 @@
+package dec
+
+import (
+	"math/big"
+)
+
+func coercePrecision(a, b *Decimal) (side int8) {
+	if a.precision == b.precision {
+		return 0
+	}
+	if a.value == nil {
+		a.value = &big.Int{}
+	}
+	if b.value == nil {
+		b.value = &big.Int{}
+	}
+	var (
+		precisionDelta Precision
+		lessPrecise    *Decimal
+		morePrecise    *Decimal
+	)
+	if a.precision > b.precision {
+		precisionDelta = a.precision - b.precision
+		morePrecise = a
+		lessPrecise = b
+		side = 1
+	} else {
+		precisionDelta = b.precision - a.precision
+		morePrecise = b
+		lessPrecise = a
+		side = -1
+	}
+
+	precisionMultiplier := (&big.Int{}).Exp(
+		big.NewInt(10),
+		(&big.Int{}).SetUint64(uint64(precisionDelta)),
+		nil)
+
+	increasedPrecisionValue := big.Int{}
+	increasedPrecisionValue.Mul(lessPrecise.value, precisionMultiplier)
+	if checkNumberSize(&increasedPrecisionValue) {
+		lessPrecise.precision += precisionDelta
+		lessPrecise.value = &increasedPrecisionValue
+	} else {
+		morePrecise.precision -= precisionDelta
+		reducedPrecisionValue := big.Int{}
+		reducedPrecisionValue.Div(morePrecise.value, precisionMultiplier)
+		if !checkNumberSize(&reducedPrecisionValue) {
+			panic("unreachable: more precise value can't be too big after precision reduction")
+		}
+		morePrecise.value = &reducedPrecisionValue
+		side *= -1
+	}
+	return side
+}
+
+func Add(a, b Decimal) Decimal {
+	coercePrecision(&a, &b)
+	return MustFromUnits((&big.Int{}).Add(a.value, b.value), a.precision)
+}
+
+func Sub(a, b Decimal) Decimal {
+	coercePrecision(&a, &b)
+	return MustFromUnits((&big.Int{}).Sub(a.value, b.value), a.precision)
+}
+
+func Mul(a, b Decimal) Decimal {
+	coercePrecision(&a, &b)
+	ten := (&big.Int{}).SetUint64(10)
+	fixPoint := (&big.Int{}).Exp(ten, (&big.Int{}).SetUint64(uint64(b.precision)), nil)
+	value := &big.Int{}
+	value.Mul(a.value, b.value)
+	value.Div(value, fixPoint)
+	return MustFromUnits(value, a.precision)
+}
+
+func Div(a, b Decimal) Decimal {
+	coercePrecision(&a, &b)
+	ten := (&big.Int{}).SetUint64(10)
+	fixPoint := (&big.Int{}).Exp(ten, (&big.Int{}).SetUint64(uint64(b.precision)), nil)
+	value := &big.Int{}
+	value.Mul(a.value, fixPoint)
+	value.Div(value, b.value)
+	return MustFromUnits(value, a.precision)
+}
+
+func Mod(a, b Decimal) Decimal {
+	coercePrecision(&a, &b)
+	return MustFromUnits((&big.Int{}).Mod(a.value, b.value), a.precision)
+}
+
+func DivMod(a, b Decimal) (div, mod Decimal) {
+	coercePrecision(&a, &b)
+	div.value = &big.Int{}
+	mod.value = &big.Int{}
+	div.precision = a.precision
+	mod.precision = a.precision
+	aValue := &big.Int{}
+	bValue := &big.Int{}
+	ten := (&big.Int{}).SetUint64(10)
+	fixPoint := (&big.Int{}).Exp(ten, (&big.Int{}).SetUint64(uint64(a.precision)), nil)
+	aValue.Mul(a.value, fixPoint)
+	bValue.Mul(b.value, fixPoint)
+	div.value, mod.value = (&big.Int{}).DivMod(aValue, bValue, mod.value)
+	div.value.Mul(div.value, fixPoint)
+	mod.value.Div(mod.value, fixPoint)
+	return div, mod
+}
+
+func Abs(signed Decimal) (absolute Decimal) {
+	absolute.value = (&big.Int{}).Abs(signed.value)
+	absolute.precision = signed.precision
+	return absolute
+}
+
+func Neg(a Decimal) (neg Decimal) {
+	neg.value.Neg(a.value)
+	neg.precision = a.precision
+	return neg
+}
+
+func Cmp(a, b Decimal) int {
+	coercePrecision(&a, &b)
+	return a.value.Cmp(b.value)
+}
