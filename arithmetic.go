@@ -66,20 +66,16 @@ func Sub(a, b Decimal) Decimal {
 
 func Mul(a, b Decimal) Decimal {
 	coercePrecision(&a, &b)
-	ten := (&big.Int{}).SetUint64(10)
-	fixPoint := (&big.Int{}).Exp(ten, (&big.Int{}).SetUint64(uint64(b.precision)), nil)
 	value := &big.Int{}
 	value.Mul(a.value, b.value)
-	value.Div(value, fixPoint)
+	value.Div(value, a.precision.Multiplier())
 	return MustFromUnits(value, a.precision)
 }
 
 func Div(a, b Decimal) Decimal {
 	coercePrecision(&a, &b)
-	ten := (&big.Int{}).SetUint64(10)
-	fixPoint := (&big.Int{}).Exp(ten, (&big.Int{}).SetUint64(uint64(b.precision)), nil)
 	value := &big.Int{}
-	value.Mul(a.value, fixPoint)
+	value.Mul(a.value, a.precision.Multiplier())
 	value.Div(value, b.value)
 	return MustFromUnits(value, a.precision)
 }
@@ -97,13 +93,12 @@ func DivMod(a, b Decimal) (div, mod Decimal) {
 	mod.precision = a.precision
 	aValue := &big.Int{}
 	bValue := &big.Int{}
-	ten := (&big.Int{}).SetUint64(10)
-	fixPoint := (&big.Int{}).Exp(ten, (&big.Int{}).SetUint64(uint64(a.precision)), nil)
-	aValue.Mul(a.value, fixPoint)
-	bValue.Mul(b.value, fixPoint)
+	precisionMultiplier := a.precision.Multiplier()
+	aValue.Mul(a.value, precisionMultiplier)
+	bValue.Mul(b.value, precisionMultiplier)
 	div.value, mod.value = (&big.Int{}).DivMod(aValue, bValue, mod.value)
-	div.value.Mul(div.value, fixPoint)
-	mod.value.Div(mod.value, fixPoint)
+	div.value.Mul(div.value, precisionMultiplier)
+	mod.value.Div(mod.value, precisionMultiplier)
 	return div, mod
 }
 

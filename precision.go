@@ -30,6 +30,13 @@ func (p Precision) Ten() Decimal {
 	return Ten(p)
 }
 
+func (p Precision) Multiplier() *big.Int {
+	var value big.Int
+	value.SetUint64(10)
+	value.Exp(&value, big.NewInt(int64(p)), nil)
+	return &value
+}
+
 func (p Precision) FromUnits(val *big.Int) (Decimal, error) {
 	return FromUnits(val, p)
 }

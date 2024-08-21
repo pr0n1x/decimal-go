@@ -55,11 +55,8 @@ func FromZUInt64(val uint64, precision Precision) (Decimal, error) {
 	if precision < 0 || precision >= 128 {
 		return Decimal{}, ErrInvalidPrecision
 	}
-	ten := (&big.Int{}).SetUint64(10)
-	precisionBigInt := (&big.Int{}).SetInt64(int64(precision))
-	multiplier := (&big.Int{}).Exp(ten, precisionBigInt, nil)
 	value := (&big.Int{}).SetUint64(val)
-	value.Mul(value, multiplier)
+	value.Mul(value, precision.Multiplier())
 	return Decimal{value: value, precision: precision}, nil
 }
 
@@ -73,11 +70,8 @@ func FromZInt64(val int64, precision Precision) (Decimal, error) {
 	if precision < 0 || precision >= 128 {
 		return Decimal{}, ErrInvalidPrecision
 	}
-	ten := (&big.Int{}).SetUint64(10)
-	precisionBigInt := (&big.Int{}).SetInt64(int64(precision))
-	multiplier := (&big.Int{}).Exp(ten, precisionBigInt, nil)
 	value := (&big.Int{}).SetInt64(val)
-	value.Mul(value, multiplier)
+	value.Mul(value, precision.Multiplier())
 	return Decimal{value: value, precision: precision}, nil
 }
 
