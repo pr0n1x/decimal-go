@@ -18,6 +18,12 @@ type Decimal struct {
 	precision Precision
 }
 
+// TODO: exclude checkNumberSize from creation and rescaling
+// TODO: implement method .Fit(bits uint8) (Decimal, error) which rescales number (with the same logic as in checkNumberSize)
+// TODO: change IncreasePrecision to Rescale method which can increase and reduce precision
+// TODO: re-implement coercePrecision using Rescale method
+// TODO: add methods Ceil, Floor, Round, Pow, Avg(first Decimal, rest ...Decimal).
+
 func Zero(p Precision) Decimal {
 	return MustFromUInt64(0, p)
 }
