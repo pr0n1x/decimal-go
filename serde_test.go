@@ -18,16 +18,18 @@ func Test_Encode_TypePrecisionMismatch(t *testing.T) {
 		Value *T `json:"value"`
 	}
 	cases := []any{
-		decTxt[TextMilli]{Value: TextMilliRef(MustFromUInt64(1, Micro))},
-		decTxt[TextMicro]{Value: TextMicroRef(MustFromUInt64(1, Milli))},
-		decTxt[TextNano]{Value: TextNanoRef(MustFromUInt64(1, Milli))},
-		decTxt[TextPico]{Value: TextPicoRef(MustFromUInt64(1, Milli))},
-		decTxt[TextFemto]{Value: TextFemtoRef(MustFromUInt64(1, Milli))},
-		decTxt[TextAtto]{Value: TextAttoRef(MustFromUInt64(1, Milli))},
-		decTxt[TextZepto]{Value: TextZeptoRef(MustFromUInt64(1, Milli))},
-		decTxt[TextYocto]{Value: TextYoctoRef(MustFromUInt64(1, Milli))},
-		decTxt[TextRonto]{Value: TextRontoRef(MustFromUInt64(1, Milli))},
-		decTxt[TextQuecto]{Value: TextQuectoRef(MustFromUInt64(1, Milli))},
+		decTxt[TextDeci]{Value: TextDeciRef(FromUInt64(1, Centi))},
+		decTxt[TextCenti]{Value: TextCentiRef(FromUInt64(1, Deci))},
+		decTxt[TextMilli]{Value: TextMilliRef(FromUInt64(1, Deci))},
+		decTxt[TextMicro]{Value: TextMicroRef(FromUInt64(1, Deci))},
+		decTxt[TextNano]{Value: TextNanoRef(FromUInt64(1, Deci))},
+		decTxt[TextPico]{Value: TextPicoRef(FromUInt64(1, Deci))},
+		decTxt[TextFemto]{Value: TextFemtoRef(FromUInt64(1, Deci))},
+		decTxt[TextAtto]{Value: TextAttoRef(FromUInt64(1, Deci))},
+		decTxt[TextZepto]{Value: TextZeptoRef(FromUInt64(1, Deci))},
+		decTxt[TextYocto]{Value: TextYoctoRef(FromUInt64(1, Deci))},
+		decTxt[TextRonto]{Value: TextRontoRef(FromUInt64(1, Deci))},
+		decTxt[TextQuecto]{Value: TextQuectoRef(FromUInt64(1, Deci))},
 	}
 	for _, testCase := range cases {
 		if _, err := json.Marshal(testCase); err == nil || !errors.Is(err, ErrTypePrecisionMismatch) {

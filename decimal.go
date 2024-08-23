@@ -7,9 +7,7 @@ import (
 )
 
 var (
-	ErrInvalid          = werr.New("invalid string")
-	ErrInvalidPrecision = werr.New("invalid precision")
-	ErrTooBigNumber     = werr.New("too big number")
+	ErrInvalidDecimalString = werr.New("invalid decimal value string")
 )
 
 // Decimal based on tlb.Coins from tonutils-go
@@ -21,19 +19,19 @@ type Decimal struct {
 // TODO: add methods Ceil, Floor, Round, Pow, Avg(first Decimal, rest ...Decimal).
 
 func Zero(p Precision) Decimal {
-	return MustFromUInt64Units(0, p)
+	return FromUnitsUInt64(0, p)
 }
 
 func One(p Precision) Decimal {
-	return MustFromUInt64(1, p)
+	return FromUInt64(1, p)
 }
 
 func Ten(p Precision) Decimal {
-	return MustFromUInt64(10, p)
+	return FromUInt64(10, p)
 }
 
 func Unit(p Precision) Decimal {
-	return MustFromUnits((&big.Int{}).SetUint64(1), p)
+	return FromUnits((&big.Int{}).SetUint64(1), p)
 }
 
 func PrecisionMultiplier(p Precision) *big.Int {
@@ -56,18 +54,14 @@ func (d Decimal) Units() *big.Int {
 	return (&big.Int{}).Set(d.value)
 }
 
-func (d Decimal) Rescale(p Precision) (Decimal, error) {
+func (d Decimal) Rescale(p Precision) Decimal {
 	if p > d.precision {
 		return FromUnits((&big.Int{}).Mul(d.value, (p-d.precision).Multiplier()), p)
 	}
 	if p < d.precision {
 		return FromUnits((&big.Int{}).Div(d.value, (d.precision-p).Multiplier()), p)
 	}
-	return d.Copy(), nil
-}
-
-func (d Decimal) MustRescale(p Precision) Decimal {
-	return must(d.Rescale(p))
+	return d.Copy()
 }
 
 func (d Decimal) Copy() Decimal {
@@ -109,6 +103,100 @@ func (d Decimal) String() string {
 	}
 
 	return a
+}
+
+// FromUnits creates Decimal from a raw *big.Int value and a precision
+func FromUnits(val *big.Int, precision Precision) Decimal {
+	return Decimal{
+		precision: precision,
+		value:     (&big.Int{}).Set(val),
+	}
+}
+
+// FromUnitsUInt64 creates Decimal from a raw uint64 value and a precision
+func FromUnitsUInt64(val uint64, precision Precision) Decimal {
+	return FromUnits((&big.Int{}).SetUint64(val), precision)
+}
+
+// FromUnitsInt64 creates Decimal from a raw int64 value and a precision
+func FromUnitsInt64(val int64, precision Precision) Decimal {
+	return FromUnits((&big.Int{}).SetInt64(val), precision)
+}
+
+// FromUInt64 creates Decimal using uint64 as an integer part of the value
+func FromUInt64(val uint64, precision Precision) Decimal {
+	value := (&big.Int{}).SetUint64(val)
+	value.Mul(value, precision.Multiplier())
+	return Decimal{value: value, precision: precision}
+}
+
+// FromInt64 creates Decimal using int64 as an integer part of the value
+func FromInt64(val int64, precision Precision) Decimal {
+	value := (&big.Int{}).SetInt64(val)
+	value.Mul(value, precision.Multiplier())
+	return Decimal{value: value, precision: precision}
+}
+
+// Parse parses decimal number
+func Parse(val string, precision Precision) (Decimal, error) {
+	s := strings.SplitN(val, ".", 2)
+
+	if len(s) == 0 {
+		return Decimal{}, ErrInvalidDecimalString
+	}
+
+	hi, ok := (&big.Int{}).SetString(s[0], 10)
+	if !ok {
+		return Decimal{}, ErrInvalidDecimalString
+	}
+
+	hi = hi.Mul(hi, (&big.Int{}).Exp(big.NewInt(10), big.NewInt(int64(precision)), nil))
+
+	if len(s) == 2 {
+		loStr := s[1]
+		// lo can have max {decimals} digits
+		if len(loStr) > int(precision) {
+			loStr = loStr[:precision]
+		}
+
+		leadZeroes := 0
+		for _, sym := range loStr {
+			if sym != '0' {
+				break
+			}
+			leadZeroes++
+		}
+
+		lo, ok := (&big.Int{}).SetString(loStr, 10)
+		if !ok {
+			return Decimal{}, ErrInvalidDecimalString
+		}
+
+		digits := len(lo.String()) // =_=
+		lo = lo.Mul(lo, (&big.Int{}).Exp(big.NewInt(10), big.NewInt(int64((int(precision)-leadZeroes)-digits)), nil))
+
+		hi = hi.Add(hi, lo)
+	}
+
+	return FromUnits(hi, precision), nil
+}
+
+// MustParse the same as ParsePrecise but panics on error
+func MustParse(val string, precision Precision) Decimal {
+	return must(Parse(val, precision))
+}
+
+// ParseUnits parse a string of whole number containing integer and fractional part of the value
+func ParseUnits(val string, precision Precision) (Decimal, error) {
+	if bn, ok := (&big.Int{}).SetString(val, 10); ok {
+		return FromUnits(bn, precision), nil
+	}
+	return Decimal{}, ErrInvalidDecimalString
+}
+
+// MustParseUnits the same as ParseUnits but panics on error
+func MustParseUnits(val string, precision Precision) Decimal {
+	return must(ParseUnits(val, precision))
 }
 
 func must[T any](v T, err error) T {

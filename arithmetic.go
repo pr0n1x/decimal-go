@@ -15,10 +15,10 @@ func coercePrecision(a, b *Decimal) (side int8) {
 		b.value = &big.Int{}
 	}
 	if a.precision > b.precision {
-		*b = b.MustRescale(a.precision)
+		*b = b.Rescale(a.precision)
 		side = 1
 	} else {
-		*a = a.MustRescale(b.precision)
+		*a = a.Rescale(b.precision)
 		side = -1
 	}
 	return side
@@ -26,12 +26,12 @@ func coercePrecision(a, b *Decimal) (side int8) {
 
 func Add(a, b Decimal) Decimal {
 	coercePrecision(&a, &b)
-	return MustFromUnits((&big.Int{}).Add(a.value, b.value), a.precision)
+	return FromUnits((&big.Int{}).Add(a.value, b.value), a.precision)
 }
 
 func Sub(a, b Decimal) Decimal {
 	coercePrecision(&a, &b)
-	return MustFromUnits((&big.Int{}).Sub(a.value, b.value), a.precision)
+	return FromUnits((&big.Int{}).Sub(a.value, b.value), a.precision)
 }
 
 func Mul(a, b Decimal) Decimal {
@@ -39,7 +39,7 @@ func Mul(a, b Decimal) Decimal {
 	value := &big.Int{}
 	value.Mul(a.value, b.value)
 	value.Div(value, a.precision.Multiplier())
-	return MustFromUnits(value, a.precision)
+	return FromUnits(value, a.precision)
 }
 
 func Div(a, b Decimal) Decimal {
@@ -47,7 +47,7 @@ func Div(a, b Decimal) Decimal {
 	value := &big.Int{}
 	value.Mul(a.value, a.precision.Multiplier())
 	value.Div(value, b.value)
-	return MustFromUnits(value, a.precision)
+	return FromUnits(value, a.precision)
 }
 
 // DivTail returns a division result and a tail (residual/remainder related to a precision)
@@ -58,12 +58,12 @@ func DivTail(a, b Decimal) (Decimal, Decimal) {
 	value.Mul(a.value, a.precision.Multiplier())
 	value.DivMod(value, b.value, tail)
 	tail.Div(tail, (a.precision - 1).Multiplier())
-	return MustFromUnits(value, a.precision), MustFromUnits(tail, a.precision+1)
+	return FromUnits(value, a.precision), FromUnits(tail, a.precision+1)
 }
 
 func Mod(a, b Decimal) Decimal {
 	coercePrecision(&a, &b)
-	return MustFromUnits((&big.Int{}).Mod(a.value, b.value), a.precision)
+	return FromUnits((&big.Int{}).Mod(a.value, b.value), a.precision)
 }
 
 func DivMod(a, b Decimal) (div, mod Decimal) {

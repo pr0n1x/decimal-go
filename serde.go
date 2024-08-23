@@ -6,6 +6,8 @@ import (
 )
 
 type (
+	TextDeci   Decimal
+	TextCenti  Decimal
 	TextMilli  Decimal
 	TextMicro  Decimal
 	TextNano   Decimal
@@ -52,7 +54,8 @@ func unmarshalText[T typePrecisionWrapper](d *T, data []byte) error {
 }
 
 type DecimalTextTrait interface {
-	TextMilli | TextMicro |
+	TextDeci | TextCenti |
+		TextMilli | TextMicro |
 		TextNano | TextPico |
 		TextFemto | TextAtto |
 		TextZepto | TextYocto |
@@ -63,6 +66,20 @@ func ref[T DecimalTextTrait](d Decimal) *T {
 	v := T(d)
 	return &v
 }
+
+func TextDeciRef(d Decimal) *TextDeci                     { return ref[TextDeci](d) }
+func (_ *TextDeci) TypePrecision() Precision              { return Deci }
+func (d *TextDeci) GetDecimal() Decimal                   { return Decimal(*d) }
+func (d *TextDeci) SetDecimal(v Decimal)                  { *d = TextDeci(v) }
+func (d *TextDeci) MarshalText() ([]byte, error)          { return marshalText(d) }
+func (d *TextDeci) UnmarshalText(data []byte) (err error) { return unmarshalText(&d, data) }
+
+func TextCentiRef(d Decimal) *TextCenti                    { return ref[TextCenti](d) }
+func (_ *TextCenti) TypePrecision() Precision              { return Centi }
+func (d *TextCenti) GetDecimal() Decimal                   { return Decimal(*d) }
+func (d *TextCenti) SetDecimal(v Decimal)                  { *d = TextCenti(v) }
+func (d *TextCenti) MarshalText() ([]byte, error)          { return marshalText(d) }
+func (d *TextCenti) UnmarshalText(data []byte) (err error) { return unmarshalText(&d, data) }
 
 func TextMilliRef(d Decimal) *TextMilli                    { return ref[TextMilli](d) }
 func (_ *TextMilli) TypePrecision() Precision              { return Milli }

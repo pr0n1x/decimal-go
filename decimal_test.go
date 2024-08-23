@@ -19,7 +19,7 @@ func Test_ParseNano(t *testing.T) {
 
 func Test_FromBigInt(t *testing.T) {
 	var n int64 = 2_200_999_888
-	if Nano.MustFromUnits(big.NewInt(n)).Units().Int64() != n {
-		t.Fatal("MustFromUnits(big.NewInt(n)).Units().Int64() != n")
+	if Nano.FromUnits(big.NewInt(n)).Units().Int64() != n {
+		t.Fatal("FromUnits(big.NewInt(n)).Units().Int64() != n")
 	}
 }

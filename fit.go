@@ -9,26 +9,16 @@ type Fit struct {
 	Decimal
 	Size FitSize
 }
-type FitSize interface {
-	sealedFitSize()
-	FitSizeInBytes() uint
-	MaxValue() *big.Int
-}
+type FitSize uint32
 
-type Fit128 struct{}
-type Fit256 struct{}
+var Fit128 FitSize = 16
+var Fit256 FitSize = 32
 
-func (Fit128) sealedFitSize()       {}
-func (Fit128) FitSizeInBytes() uint { return 16 }
-func (Fit128) MaxValue() (maxValue *big.Int) {
-	maxValue = (&big.Int{}).Exp(big.NewInt(2), big.NewInt(128), nil)
-	maxValue = maxValue.Sub(maxValue, big.NewInt(1))
-	return maxValue
+func (s FitSize) BitsLen() uint64 {
+	return uint64(s) * 8
 }
-func (Fit256) sealedFitSize()       {}
-func (Fit256) FitSizeInBytes() uint { return 32 }
-func (Fit256) MaxValue() (maxValue *big.Int) {
-	maxValue = (&big.Int{}).Exp(big.NewInt(2), big.NewInt(256), nil)
+func (s FitSize) MaxValue() (maxValue *big.Int) {
+	maxValue = (&big.Int{}).Exp(big.NewInt(2), big.NewInt(int64(s*8)), nil)
 	maxValue = maxValue.Sub(maxValue, big.NewInt(1))
 	return maxValue
 }
@@ -38,12 +28,12 @@ type fitReduceFlag bool
 const FitReduce fitReduceFlag = true
 
 var (
-	Max128BitsValue = Fit128{}.MaxValue()
-	Max256BitsValue = Fit256{}.MaxValue()
+	Max128BitsValue = Fit128.MaxValue()
+	Max256BitsValue = Fit256.MaxValue()
 )
 
 func (d Decimal) Fit(size FitSize, reduce ...fitReduceFlag) (val Fit, fit bool) {
-	val, fit = Fit{Decimal: d, Size: size}, checkNumberSize(d.value, size.FitSizeInBytes())
+	val, fit = Fit{Decimal: d, Size: size}, checkNumberSize(d.value, uint(size))
 	if !fit && len(reduce) > 0 && bool(reduce[0]) {
 		// TODO: call reducePrecisionToFit256
 		return val, fit
@@ -54,7 +44,7 @@ func (d Decimal) Fit(size FitSize, reduce ...fitReduceFlag) (val Fit, fit bool) 
 func (d Decimal) MustFit(size FitSize, reduce ...fitReduceFlag) Fit {
 	f, ok := d.Fit(size, reduce...)
 	if !ok {
-		panic(fmt.Sprintf("Decimal does not fit into %d bits", size.FitSizeInBytes()*8))
+		panic(fmt.Sprintf("Decimal does not fit into %d bits", size.BitsLen()))
 	}
 	return f
 }

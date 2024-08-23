@@ -53,6 +53,8 @@ func Test_DivMod_Fractional(t *testing.T) {
 func Test_SumHasMaxPrecision(t *testing.T) {
 	sum := Milli.Zero()
 	list := []Decimal{
+		Deci.One(),
+		Centi.One(),
 		Milli.One(),
 		Micro.One(),
 		Nano.One(),
@@ -84,6 +86,16 @@ func Test_SumHasMaxPrecision(t *testing.T) {
 	}
 }
 
+func Test_Rescale(t *testing.T) {
+	n := Centi.MustParse("99.99")
+	if n.Units().String() != "9999" {
+		t.Fatal("invalid units")
+	}
+	if n.Rescale(n.precision+2).Units().String() != "999900" {
+		t.Fatal("invalid rescale")
+	}
+}
+
 func Test_DivTail(t *testing.T) {
 	type fraction struct {
 		numerator   Decimal
@@ -105,11 +117,7 @@ func Test_DivTail(t *testing.T) {
 		if tail.precision-res.precision > 1 {
 			t.Fatal("invalid DivTail: tail and result precision difference should be equal to 1")
 		}
-		if n, err := res.Rescale(res.precision + 1); err != nil {
-			t.Fatal(err)
-		} else {
-			res = n
-		}
+		res = res.Rescale(res.precision + 1)
 		if res.Mul(denominator).Add(tail).Cmp(numerator) != 0 {
 			t.Fatal("invalid DivTail")
 		}
