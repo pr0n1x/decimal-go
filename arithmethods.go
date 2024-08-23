@@ -28,8 +28,8 @@ func (d Decimal) DivTail(rhs Decimal) (div, tail Decimal) {
 	return DivTail(d, rhs)
 }
 
-func (d Decimal) Abs(rhs Decimal) Decimal {
-	return Div(d, rhs)
+func (d Decimal) Abs() Decimal {
+	return Abs(d)
 }
 
 func (d Decimal) Neg() Decimal {

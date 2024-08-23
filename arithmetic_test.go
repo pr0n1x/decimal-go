@@ -105,7 +105,7 @@ func Test_DivTail(t *testing.T) {
 		if tail.precision-res.precision > 1 {
 			t.Fatal("invalid DivTail: tail and result precision difference should be equal to 1")
 		}
-		if n, err := res.IncreasePrecision(1); err != nil {
+		if n, err := res.Rescale(res.precision + 1); err != nil {
 			t.Fatal(err)
 		} else {
 			res = n
@@ -113,5 +113,12 @@ func Test_DivTail(t *testing.T) {
 		if res.Mul(denominator).Add(tail).Cmp(numerator) != 0 {
 			t.Fatal("invalid DivTail")
 		}
+	}
+}
+
+func Test_MaxFraction(t *testing.T) {
+	maxFraction := Nano.MaxFraction()
+	if res, expected := maxFraction.Units().String(), "999999999"; res != expected {
+		t.Fatalf("invalid MaxFraction, expected %s, got %s", expected, res)
 	}
 }

@@ -14,42 +14,12 @@ func coercePrecision(a, b *Decimal) (side int8) {
 	if b.value == nil {
 		b.value = &big.Int{}
 	}
-	var (
-		precisionDelta Precision
-		lessPrecise    *Decimal
-		morePrecise    *Decimal
-	)
 	if a.precision > b.precision {
-		precisionDelta = a.precision - b.precision
-		morePrecise = a
-		lessPrecise = b
+		*b = b.MustRescale(a.precision)
 		side = 1
 	} else {
-		precisionDelta = b.precision - a.precision
-		morePrecise = b
-		lessPrecise = a
+		*a = a.MustRescale(b.precision)
 		side = -1
-	}
-
-	precisionMultiplier := (&big.Int{}).Exp(
-		big.NewInt(10),
-		(&big.Int{}).SetUint64(uint64(precisionDelta)),
-		nil)
-
-	increasedPrecisionValue := big.Int{}
-	increasedPrecisionValue.Mul(lessPrecise.value, precisionMultiplier)
-	if checkNumberSize(&increasedPrecisionValue) {
-		lessPrecise.precision += precisionDelta
-		lessPrecise.value = &increasedPrecisionValue
-	} else {
-		morePrecise.precision -= precisionDelta
-		reducedPrecisionValue := big.Int{}
-		reducedPrecisionValue.Div(morePrecise.value, precisionMultiplier)
-		if !checkNumberSize(&reducedPrecisionValue) {
-			panic("unreachable: more precise value can't be too big after precision reduction")
-		}
-		morePrecise.value = &reducedPrecisionValue
-		side *= -1
 	}
 	return side
 }

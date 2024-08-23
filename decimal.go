@@ -18,10 +18,6 @@ type Decimal struct {
 	precision Precision
 }
 
-// TODO: exclude checkNumberSize from creation and rescaling
-// TODO: implement method .Fit(bits uint8) (Decimal, error) which rescales number (with the same logic as in checkNumberSize)
-// TODO: change IncreasePrecision to Rescale method which can increase and reduce precision
-// TODO: re-implement coercePrecision using Rescale method
 // TODO: add methods Ceil, Floor, Round, Pow, Avg(first Decimal, rest ...Decimal).
 
 func Zero(p Precision) Decimal {
@@ -60,16 +56,18 @@ func (d Decimal) Units() *big.Int {
 	return (&big.Int{}).Set(d.value)
 }
 
-// IncreasePrecision increases value precision
-func (d Decimal) IncreasePrecision(p Precision) (Decimal, error) {
-	precision := d.precision + 1
-	value := (&big.Int{}).Mul(d.value, p.Multiplier())
-	return FromUnits(value, precision)
+func (d Decimal) Rescale(p Precision) (Decimal, error) {
+	if p > d.precision {
+		return FromUnits((&big.Int{}).Mul(d.value, (p-d.precision).Multiplier()), p)
+	}
+	if p < d.precision {
+		return FromUnits((&big.Int{}).Div(d.value, (d.precision-p).Multiplier()), p)
+	}
+	return d.Copy(), nil
 }
 
-// MustIncreasePrecision the same as IncreasePrecision but panics on error
-func (d Decimal) MustIncreasePrecision(p Precision) Decimal {
-	return must(d.IncreasePrecision(p))
+func (d Decimal) MustRescale(p Precision) Decimal {
+	return must(d.Rescale(p))
 }
 
 func (d Decimal) Copy() Decimal {
@@ -111,4 +109,11 @@ func (d Decimal) String() string {
 	}
 
 	return a
+}
+
+func must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }

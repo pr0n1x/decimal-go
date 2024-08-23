@@ -10,9 +10,6 @@ func FromUnits(val *big.Int, precision Precision) (Decimal, error) {
 	if precision < 0 || precision >= 128 {
 		return Decimal{}, ErrInvalidPrecision
 	}
-	if !checkNumberSize(val) {
-		return Decimal{}, ErrTooBigNumber
-	}
 	return Decimal{
 		precision: precision,
 		value:     (&big.Int{}).Set(val),
@@ -144,21 +141,4 @@ func ParseUnits(val string, precision Precision) (Decimal, error) {
 // MustParseUnits the same as ParseUnits but panics on error
 func MustParseUnits(val string, precision Precision) Decimal {
 	return must(ParseUnits(val, precision))
-}
-
-func checkNumberSize(val *big.Int) bool {
-	if uint((val.BitLen()+7)>>3) > 32 {
-		// (bitlen + 7)>>3 - the same as ceil(bitlen/8)
-		// There are no systems need numbers loger then 32 bytes (256 bits)
-		// especially for money
-		return false
-	}
-	return true
-}
-
-func must[T any](v T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-	return v
 }
