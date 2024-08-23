@@ -21,15 +21,15 @@ type Decimal struct {
 // TODO: add methods Ceil, Floor, Round, Pow, Avg(first Decimal, rest ...Decimal).
 
 func Zero(p Precision) Decimal {
-	return MustFromUInt64(0, p)
+	return MustFromUInt64Units(0, p)
 }
 
 func One(p Precision) Decimal {
-	return MustFromZUInt64(1, p)
+	return MustFromUInt64(1, p)
 }
 
 func Ten(p Precision) Decimal {
-	return MustFromZUInt64(10, p)
+	return MustFromUInt64(10, p)
 }
 
 func Unit(p Precision) Decimal {

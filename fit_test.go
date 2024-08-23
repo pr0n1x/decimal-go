@@ -26,7 +26,7 @@ func Test_NonFitOperations(t *testing.T) {
 		if _, fit := maxFit.Add(unitFit); fit {
 			t.Fatalf("max value + 1 should not fit into %d bytes", size.FitSizeInBytes())
 		}
-		twoFit := Nano.MustFromZUInt64(2).MustFit(size)
+		twoFit := Nano.MustFromUInt64(2).MustFit(size)
 		if _, fit := maxFit.Div(twoFit); !fit {
 			t.Fatalf("max value / 2 should fit into %d bytes", size.FitSizeInBytes())
 		}

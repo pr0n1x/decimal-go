@@ -21,34 +21,34 @@ func MustFromUnits(val *big.Int, precision Precision) Decimal {
 	return must(FromUnits(val, precision))
 }
 
-// FromUInt64 creates Decimal from a raw uint64 value and a precision
-func FromUInt64(val uint64, precision Precision) (Decimal, error) {
+// FromUInt64Units creates Decimal from a raw uint64 value and a precision
+func FromUInt64Units(val uint64, precision Precision) (Decimal, error) {
 	if precision < 0 || precision >= 128 {
 		return Decimal{}, ErrInvalidPrecision
 	}
 	return FromUnits((&big.Int{}).SetUint64(val), precision)
 }
 
-// MustFromUInt64 the same as FromUInt64 but panics on error
-func MustFromUInt64(val uint64, precision Precision) Decimal {
-	return must(FromUInt64(val, precision))
+// MustFromUInt64Units the same as FromUInt64Units but panics on error
+func MustFromUInt64Units(val uint64, precision Precision) Decimal {
+	return must(FromUInt64Units(val, precision))
 }
 
-// FromInt64 creates Decimal from a raw int64 value and a precision
-func FromInt64(val int64, precision Precision) (Decimal, error) {
+// FromInt64Units creates Decimal from a raw int64 value and a precision
+func FromInt64Units(val int64, precision Precision) (Decimal, error) {
 	if precision < 0 || precision >= 128 {
 		return Decimal{}, ErrInvalidPrecision
 	}
 	return FromUnits((&big.Int{}).SetInt64(val), precision)
 }
 
-// MustFromInt64 the same as FromInt64 but panics on error
-func MustFromInt64(val int64, precision Precision) Decimal {
-	return must(FromInt64(val, precision))
+// MustFromInt64Units the same as FromInt64Units but panics on error
+func MustFromInt64Units(val int64, precision Precision) Decimal {
+	return must(FromInt64Units(val, precision))
 }
 
-// FromZUInt64 creates Decimal using uint64 as an integer part of the value
-func FromZUInt64(val uint64, precision Precision) (Decimal, error) {
+// FromUInt64 creates Decimal using uint64 as an integer part of the value
+func FromUInt64(val uint64, precision Precision) (Decimal, error) {
 	if precision < 0 || precision >= 128 {
 		return Decimal{}, ErrInvalidPrecision
 	}
@@ -57,13 +57,13 @@ func FromZUInt64(val uint64, precision Precision) (Decimal, error) {
 	return Decimal{value: value, precision: precision}, nil
 }
 
-// MustFromZUInt64 the same as FromZUInt64 but panics on error
-func MustFromZUInt64(val uint64, precision Precision) Decimal {
-	return must(FromZUInt64(val, precision))
+// MustFromUInt64 the same as FromUInt64 but panics on error
+func MustFromUInt64(val uint64, precision Precision) Decimal {
+	return must(FromUInt64(val, precision))
 }
 
-// FromZInt64 creates Decimal using int64 as an integer part of the value
-func FromZInt64(val int64, precision Precision) (Decimal, error) {
+// FromInt64 creates Decimal using int64 as an integer part of the value
+func FromInt64(val int64, precision Precision) (Decimal, error) {
 	if precision < 0 || precision >= 128 {
 		return Decimal{}, ErrInvalidPrecision
 	}
@@ -72,9 +72,9 @@ func FromZInt64(val int64, precision Precision) (Decimal, error) {
 	return Decimal{value: value, precision: precision}, nil
 }
 
-// MustFromZInt64 the same as FromZInt64 but panics on error
-func MustFromZInt64(val int64, precision Precision) Decimal {
-	return must(FromZInt64(val, precision))
+// MustFromInt64 the same as FromInt64 but panics on error
+func MustFromInt64(val int64, precision Precision) Decimal {
+	return must(FromInt64(val, precision))
 }
 
 // Parse parses decimal number

@@ -50,6 +50,22 @@ func (p Precision) MustFromUnits(val *big.Int) Decimal {
 	return MustFromUnits(val, p)
 }
 
+func (p Precision) FromUInt64Units(val uint64) (Decimal, error) {
+	return FromUInt64Units(val, p)
+}
+
+func (p Precision) MustFromUInt64Units(val uint64) Decimal {
+	return MustFromUInt64Units(val, p)
+}
+
+func (p Precision) FromInt64Units(val int64) (Decimal, error) {
+	return FromInt64Units(val, p)
+}
+
+func (p Precision) MustFromInt64Units(val int64) Decimal {
+	return MustFromInt64Units(val, p)
+}
+
 func (p Precision) FromUInt64(val uint64) (Decimal, error) {
 	return FromUInt64(val, p)
 }
@@ -64,22 +80,6 @@ func (p Precision) FromInt64(val int64) (Decimal, error) {
 
 func (p Precision) MustFromInt64(val int64) Decimal {
 	return MustFromInt64(val, p)
-}
-
-func (p Precision) FromZUInt64(val uint64) (Decimal, error) {
-	return FromZUInt64(val, p)
-}
-
-func (p Precision) MustFromZUInt64(val uint64) Decimal {
-	return MustFromZUInt64(val, p)
-}
-
-func (p Precision) FromZInt64(val int64) (Decimal, error) {
-	return FromZInt64(val, p)
-}
-
-func (p Precision) MustFromZInt64(val int64) Decimal {
-	return MustFromZInt64(val, p)
 }
 
 func (p Precision) Parse(val string) (Decimal, error) {
