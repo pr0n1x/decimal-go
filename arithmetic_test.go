@@ -10,24 +10,24 @@ import (
 func Test_Add_DifferentPrecision(t *testing.T) {
 	a := MustParse("1.100001001", 9)
 	b := MustParse("2.200002", 6)
-	res := Add(a, b)
+	res := a.Add(b)
 	if res.Units().Uint64() != 3_300_003_001 {
 		t.Fatal("invalid add two numbers with different precisions")
 	}
 	if res.Precision() != 9 {
-		t.Fatal("result should have precision of 9 decimal places")
+		t.Fatal("result should have exp of 9 decimal places")
 	}
 }
 
 func Test_AddNeg(t *testing.T) {
 	a := MustParse("3.300003001", 9)
 	b := MustParse("-2.200002", 6)
-	res := Add(a, b)
+	res := a.Add(b)
 	if res.Units().Uint64() != 1_100_001_001 {
 		t.Fatal("invalid add negative number")
 	}
 	if res.Precision() != 9 {
-		t.Fatal("result should have precision of 9 decimal places")
+		t.Fatal("result should have exp of 9 decimal places")
 	}
 }
 
@@ -81,8 +81,8 @@ func Test_SumHasMaxPrecision(t *testing.T) {
 	for _, d := range list {
 		sum = sum.Add(d)
 	}
-	if sum.precision != Quecto {
-		t.Fatal("invalid sum precision")
+	if got, expected := sum.Precision(), Quecto; got != expected {
+		t.Fatalf("invalid sum exp, expected %d, got %d", expected, got)
 	}
 	expectedSum := len(list)
 	exactString, expectedString := sum.String(), strconv.Itoa(expectedSum)
@@ -103,7 +103,7 @@ func Test_Rescale(t *testing.T) {
 	if n.Units().String() != "9999" {
 		t.Fatal("invalid units")
 	}
-	if n.Rescale(n.precision+2).Units().String() != "999900" {
+	if n.Rescale(n.Precision()+2).Units().String() != "999900" {
 		t.Fatal("invalid rescale")
 	}
 }
@@ -123,13 +123,13 @@ func Test_DivTail(t *testing.T) {
 	} {
 		numerator, denominator := frac.numerator, frac.denominator
 		res, tail := numerator.DivTail(denominator)
-		if tail.precision <= res.precision {
-			t.Fatal("invalid DivTail: tail precision should be greater than result precision")
+		if tail.Precision() <= res.Precision() {
+			t.Fatal("invalid DivTail: tail exp should be greater than result exp")
 		}
-		if tail.precision-res.precision > 1 {
-			t.Fatal("invalid DivTail: tail and result precision difference should be equal to 1")
+		if tail.Precision()-res.Precision() > 1 {
+			t.Fatal("invalid DivTail: tail and result exp difference should be equal to 1")
 		}
-		res = res.Rescale(res.precision + 1)
+		res.Mutable().Rescale(res.Precision() + 1)
 		if res.Mul(denominator).Add(tail).Cmp(numerator) != 0 {
 			t.Fatal("invalid DivTail")
 		}

@@ -1,19 +1,13 @@
 package dec
 
 import (
-	"github.com/pr0n1x/go-type-wrappers/werr"
 	"math/big"
 	"strings"
 )
 
-var (
-	ErrInvalidDecimalString = werr.New("invalid decimal value string")
-)
-
 // Decimal based on tlb.Coins from tonutils-go
 type Decimal struct {
-	value     *big.Int
-	precision Precision
+	p *DecimalMut
 }
 
 // TODO: add methods Ceil, Floor, Round, Pow, Avg(first Decimal, rest ...Decimal).
@@ -41,60 +35,52 @@ func PrecisionMultiplier(p Precision) *big.Int {
 	return &value
 }
 
-// Precision precision - max decimals digits
-func (d Decimal) Precision() Precision {
-	return d.precision
+func (d Decimal) Mutable() *DecimalMut {
+	return d.p
 }
 
-// Units raw big int value
+// Precision exp - max decimals digits
+func (d Decimal) Precision() Precision {
+	return d.p.exp
+}
+
+// Units raw big int
 func (d Decimal) Units() *big.Int {
-	if d.value == nil {
+	if d.p == nil {
 		return big.NewInt(0)
 	}
-	return (&big.Int{}).Set(d.value)
+	return (&big.Int{}).Set(&d.p.val)
+}
+
+func (d Decimal) Sign() int {
+	if d.p == nil {
+		return 0
+	}
+	return d.p.val.Sign()
 }
 
 func (d Decimal) Rescale(p Precision) Decimal {
-	if p > d.precision {
-		return FromUnits((&big.Int{}).Mul(d.value, (p-d.precision).Multiplier()), p)
-	}
-	if p < d.precision {
-		multiplier := (d.precision - p).Multiplier()
-		value := &big.Int{}
-		if d.value.Sign() < 0 {
-			mod := (&big.Int{}).Set(d.value)
-			mod.Abs(mod)
-			mod.Mod(mod, multiplier)
-			value.Add(d.value, mod)
-		} else {
-			value.Set(d.value)
-		}
-		return FromUnits(value.Div(value, multiplier), p)
-	}
-	return d.Copy()
+	return d.p.Copy().Rescale(p).Value()
 }
 
 func (d Decimal) Copy() Decimal {
-	return Decimal{
-		precision: d.precision,
-		value:     d.Units(),
-	}
+	return d.p.Copy().Value()
 }
 
 func (d Decimal) String() string {
-	if d.value == nil {
+	if d.p == nil {
 		return "0"
 	}
 
-	a := d.value.String()
+	a := d.p.val.String()
 	if a == "0" {
 		// process 0 faster and simpler
 		return a
 	}
 
-	splitter := len(a) - int(d.precision)
+	splitter := len(a) - int(d.p.exp)
 	if splitter <= 0 {
-		a = "0." + strings.Repeat("0", int(d.precision)-len(a)) + a
+		a = "0." + strings.Repeat("0", int(d.p.exp)-len(a)) + a
 	} else {
 		// set . between lo and hi
 		a = a[:splitter] + "." + a[splitter:]
@@ -116,25 +102,22 @@ func (d Decimal) String() string {
 }
 
 func (d Decimal) UInt64() uint64 {
-	if d.value == nil {
+	if d.p == nil {
 		return 0
 	}
-	return d.value.Uint64()
+	return d.p.val.Uint64()
 }
 
 func (d Decimal) Int64() int64 {
-	if d.value == nil {
+	if d.p == nil {
 		return 0
 	}
-	return d.value.Int64()
+	return d.p.val.Int64()
 }
 
 // FromUnits creates Decimal from a raw *big.Int value and a precision
 func FromUnits(val *big.Int, precision Precision) Decimal {
-	return Decimal{
-		precision: precision,
-		value:     (&big.Int{}).Set(val),
-	}
+	return Decimal{p: NewDecimalMut(val, precision)}
 }
 
 // FromUnitsUInt64 creates Decimal from a raw uint64 value and a precision
@@ -151,14 +134,14 @@ func FromUnitsInt64(val int64, precision Precision) Decimal {
 func FromUInt64(val uint64, precision Precision) Decimal {
 	value := (&big.Int{}).SetUint64(val)
 	value.Mul(value, precision.Multiplier())
-	return Decimal{value: value, precision: precision}
+	return Decimal{p: NewDecimalMut(value, precision)}
 }
 
 // FromInt64 creates Decimal using int64 as an integer part of the value
 func FromInt64(val int64, precision Precision) Decimal {
 	value := (&big.Int{}).SetInt64(val)
 	value.Mul(value, precision.Multiplier())
-	return Decimal{value: value, precision: precision}
+	return Decimal{p: NewDecimalMut(value, precision)}
 }
 
 // Parse parses decimal number

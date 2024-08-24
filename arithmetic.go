@@ -4,101 +4,96 @@ import (
 	"math/big"
 )
 
-func coercePrecision(a, b *Decimal) (side int8) {
-	if a.precision == b.precision {
-		return 0
+func (d *DecimalMut) coercePrecision(rhs *Decimal) *DecimalMut {
+	if rhs.p == nil {
+		rhs.p = &DecimalMut{}
 	}
-	if a.value == nil {
-		a.value = &big.Int{}
+	if d.exp == rhs.p.exp {
+		return d
 	}
-	if b.value == nil {
-		b.value = &big.Int{}
-	}
-	if a.precision > b.precision {
-		*b = b.Rescale(a.precision)
-		side = 1
+	if d.exp > rhs.p.exp {
+		*rhs = rhs.Copy().Rescale(d.exp)
 	} else {
-		*a = a.Rescale(b.precision)
-		side = -1
+		*d = *d.Copy().Rescale(rhs.p.exp)
 	}
-	return side
+	return d
 }
 
-func Add(a, b Decimal) Decimal {
-	coercePrecision(&a, &b)
-	return FromUnits((&big.Int{}).Add(a.value, b.value), a.precision)
+func (d *DecimalMut) Set(val Decimal) *DecimalMut {
+	if d == nil {
+		return NewDecimalMut(val.Units(), val.Precision())
+	}
+	d.exp = val.p.exp
+	d.val = big.Int{}
+	d.val.Set(&val.p.val)
+	return d
 }
 
-func Sub(a, b Decimal) Decimal {
-	coercePrecision(&a, &b)
-	return FromUnits((&big.Int{}).Sub(a.value, b.value), a.precision)
+func (d *DecimalMut) Add(rhs Decimal) *DecimalMut {
+	d.coercePrecision(&rhs)
+	d.val.Add(&d.val, &rhs.p.val)
+	return d
 }
 
-func Mul(a, b Decimal) Decimal {
-	coercePrecision(&a, &b)
-	value := &big.Int{}
-	value.Mul(a.value, b.value)
-	value.Div(value, a.precision.Multiplier())
-	return FromUnits(value, a.precision)
+func (d *DecimalMut) Sub(rhs Decimal) *DecimalMut {
+	d.coercePrecision(&rhs)
+	d.val.Sub(&d.val, &rhs.p.val)
+	return d
 }
 
-func Div(a, b Decimal) Decimal {
-	coercePrecision(&a, &b)
-	value := &big.Int{}
-	value.Mul(a.value, a.precision.Multiplier())
-	value.Div(value, b.value)
-	return FromUnits(value, a.precision)
+func (d *DecimalMut) Mul(rhs Decimal) *DecimalMut {
+	d.coercePrecision(&rhs)
+	d.val.Mul(&d.val, &rhs.p.val)
+	d.val.Div(&d.val, d.exp.Multiplier())
+	return d
+}
+
+func (d *DecimalMut) Div(rhs Decimal) *DecimalMut {
+	d.coercePrecision(&rhs)
+	d.val.Mul(&d.val, d.exp.Multiplier())
+	d.val.Div(&d.val, &rhs.p.val)
+	return d
 }
 
 // DivTail returns a division result and a tail (residual/remainder related to a precision)
-func DivTail(a, b Decimal) (Decimal, Decimal) {
-	coercePrecision(&a, &b)
-	value := &big.Int{}
-	tail := &big.Int{}
-	value.Mul(a.value, a.precision.Multiplier())
-	value.DivMod(value, b.value, tail)
-	tail.Div(tail, (a.precision - 1).Multiplier())
-	return FromUnits(value, a.precision), FromUnits(tail, a.precision+1)
+func (d *DecimalMut) DivTail(rhs Decimal, tail *DecimalMut) (*DecimalMut, *DecimalMut) {
+	d.coercePrecision(&rhs)
+	if tail == nil {
+		tail = &DecimalMut{exp: 0, val: *big.NewInt(0)}
+	}
+	d.val.Mul(&d.val, d.exp.Multiplier())
+	d.val.DivMod(&d.val, &rhs.p.val, &tail.val)
+	tail.val.Div(&tail.val, (d.exp - 1).Multiplier())
+	tail.exp += 1
+	return d, tail
 }
 
-func Mod(a, b Decimal) Decimal {
-	coercePrecision(&a, &b)
-	return FromUnits((&big.Int{}).Mod(a.value, b.value), a.precision)
+func (d *DecimalMut) Mod(rhs Decimal) *DecimalMut {
+	d.coercePrecision(&rhs)
+	d.val.Mod(&d.val, &rhs.p.val)
+	return d
 }
 
-func DivMod(a, b Decimal) (div, mod Decimal) {
-	coercePrecision(&a, &b)
-	div.value = &big.Int{}
-	mod.value = &big.Int{}
-	div.precision = a.precision
-	mod.precision = a.precision
-	aValue := &big.Int{}
-	bValue := &big.Int{}
-	precisionMultiplier := a.precision.Multiplier()
-	aValue.Mul(a.value, precisionMultiplier)
-	bValue.Mul(b.value, precisionMultiplier)
-	div.value, mod.value = (&big.Int{}).DivMod(aValue, bValue, mod.value)
-	div.value.Mul(div.value, precisionMultiplier)
-	mod.value.Div(mod.value, precisionMultiplier)
-	return div, mod
+func (d *DecimalMut) DivMod(rhs Decimal, m *DecimalMut) (*DecimalMut, *DecimalMut) {
+	d.coercePrecision(&rhs)
+	precisionMultiplier := d.exp.Multiplier()
+	aValue := (&big.Int{}).Mul(&d.val, precisionMultiplier)
+	bValue := (&big.Int{}).Mul(&rhs.p.val, precisionMultiplier)
+	d.val.DivMod(aValue, bValue, &m.val)
+	d.val.Mul(&d.val, precisionMultiplier)
+	m.val.Div(&m.val, precisionMultiplier)
+	return d, m
 }
 
-func Abs(signed Decimal) (absolute Decimal) {
-	absolute.value = (&big.Int{}).Abs(signed.value)
-	absolute.precision = signed.precision
-	return absolute
+func (d *DecimalMut) Abs(a Decimal) *DecimalMut {
+	d.exp = a.p.exp
+	d.val.Abs(&a.p.val)
+	return d
 }
 
-func Neg(a Decimal) (neg Decimal) {
-	neg.value = &big.Int{}
-	neg.value.Neg(a.value)
-	neg.precision = a.precision
-	return neg
-}
-
-func Cmp(a, b Decimal) int {
-	coercePrecision(&a, &b)
-	return a.value.Cmp(b.value)
+func (d *DecimalMut) Neg(a Decimal) *DecimalMut {
+	d.val.Neg(&a.p.val)
+	return d
 }
 
 type RoundingMode uint8
@@ -114,34 +109,37 @@ const (
 	//ToPositiveInf                     // == IEEE 754-2008 roundTowardPositive
 )
 
-func Round(d Decimal, r Precision, m RoundingMode) Decimal {
+func (d *DecimalMut) Round(r Precision, m RoundingMode) *DecimalMut {
 	switch m {
 	case HalfEven, HalfUp, HalfDown:
 	default:
 		panic("invalid rounding mode")
 	}
-	sign := d.Units().Sign()
-	if d.precision <= r || sign == 0 {
-		return d.Copy()
+	sign := d.Value().Sign()
+	if d.exp <= r || sign == 0 {
+		return d
 	}
-	rounded := d.Rescale(r)
+	rounded := d.Copy().Rescale(r)
 	unit := r.Unit()
 	switch m {
 	case HalfEven, HalfUp, HalfDown:
 		half := Unit(r + 1).Mul(FromUInt64(5, 0))
-		mod := d.Abs().Rescale(r + 1).Mod(unit)
-		halfDeflection := mod.Cmp(half)
+		mod := d.Abs(d.Value()).Rescale(r + 1)
+		mod.Mod(unit)
+		halfDeflection := mod.Value().Cmp(half)
 		if halfDeflection == 0 && m == HalfEven {
-			if rounded.Mod(FromUInt64(2, 0)).Int64() != 0 {
-				rounded = rounded.Add(unit)
+			if rounded.Copy().Mod(FromUInt64(2, 0)).Value().Int64() != 0 {
+				rounded.Add(unit)
 			}
 		} else if (halfDeflection == 0 && m == HalfUp) || halfDeflection > 0 {
 			if sign > 0 {
-				rounded = rounded.Add(unit)
+				rounded.Add(unit)
 			} else {
-				rounded = rounded.Sub(unit)
+				rounded.Sub(unit)
 			}
 		}
 	}
-	return rounded
+	d.val = rounded.val
+	d.exp = rounded.exp
+	return d
 }

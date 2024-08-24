@@ -1,45 +1,60 @@
 package dec
 
 func (d Decimal) Add(rhs Decimal) Decimal {
-	return Add(d, rhs)
+	return d.p.Copy().Add(rhs).Value()
 }
 
 func (d Decimal) Sub(rhs Decimal) Decimal {
-	return Sub(d, rhs)
+	return d.p.Copy().Sub(rhs).Value()
 }
 
 func (d Decimal) Mul(rhs Decimal) Decimal {
-	return Mul(d, rhs)
+	return d.p.Copy().Mul(rhs).Value()
 }
 
 func (d Decimal) Div(rhs Decimal) Decimal {
-	return Div(d, rhs)
+	return d.p.Copy().Div(rhs).Value()
 }
 
 func (d Decimal) Mod(rhs Decimal) Decimal {
-	return Mod(d, rhs)
+	return d.p.Copy().Mod(rhs).Value()
 }
 
 func (d Decimal) DivMod(rhs Decimal) (div, mod Decimal) {
-	return DivMod(d, rhs)
+	dm, tm := d.p.Copy().DivMod(rhs, d.p.exp.Zero().Mutable())
+	return dm.Value(), tm.Value()
 }
 
 func (d Decimal) DivTail(rhs Decimal) (div, tail Decimal) {
-	return DivTail(d, rhs)
+	dm, tm := d.p.Copy().DivTail(rhs, d.p.exp.Zero().Mutable())
+	return dm.Value(), tm.Value()
 }
 
 func (d Decimal) Abs() Decimal {
-	return Abs(d)
+	return d.p.exp.Zero().Mutable().Abs(d).Value()
 }
 
 func (d Decimal) Neg() Decimal {
-	return Neg(d)
+	return d.p.exp.Zero().Mutable().Neg(d).Value()
 }
 
 func (d Decimal) Cmp(rhs Decimal) int {
-	return Cmp(d, rhs)
+	// reimplement coercePrecision to skip probable copying
+	if rhs.p == nil {
+		rhs.p = &DecimalMut{}
+	}
+	lhs := d.p
+	if lhs.exp != rhs.p.exp {
+		if lhs.exp < rhs.p.exp {
+			lhs = lhs.Copy().Rescale(rhs.p.exp)
+		} else {
+			rhs = rhs.Copy().Rescale(lhs.exp)
+		}
+	}
+	lhs.coercePrecision(&rhs)
+	return lhs.val.Cmp(&rhs.p.val)
 }
 
 func (d Decimal) Round(r Precision, m RoundingMode) Decimal {
-	return Round(d, r, m)
+	return d.p.Copy().Round(r, m).Value()
 }

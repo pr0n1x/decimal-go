@@ -33,7 +33,7 @@ var (
 )
 
 func (d Decimal) Fit(size FitSize, reduce ...fitReduceFlag) (val Fit, fit bool) {
-	val, fit = Fit{Decimal: d, Size: size}, checkNumberSize(d.value, uint(size))
+	val, fit = Fit{Decimal: d, Size: size}, checkNumberSize(&d.p.val, uint(size))
 	// TODO: call reducePrecisionToFit256
 	if !fit && len(reduce) > 0 && bool(reduce[0]) {
 		return val, fit
@@ -50,45 +50,45 @@ func (d Decimal) MustFit(size FitSize, reduce ...fitReduceFlag) Fit {
 }
 
 func (f Fit) Add(rhs Fit) (Fit, bool) {
-	return Add(f.Decimal, rhs.Decimal).Fit(f.Size)
+	return f.Decimal.Add(rhs.Decimal).Fit(f.Size)
 }
 
 func (f Fit) Sub(rhs Fit) (Fit, bool) {
-	return Sub(f.Decimal, rhs.Decimal).Fit(f.Size)
+	return f.Decimal.Sub(rhs.Decimal).Fit(f.Size)
 }
 
 func (f Fit) Mul(rhs Fit) (Fit, bool) {
-	return Mul(f.Decimal, rhs.Decimal).Fit(f.Size)
+	return f.Decimal.Mul(rhs.Decimal).Fit(f.Size)
 }
 
 func (f Fit) Div(rhs Fit) (Fit, bool) {
-	return Div(f.Decimal, rhs.Decimal).Fit(f.Size)
+	return f.Decimal.Div(rhs.Decimal).Fit(f.Size)
 }
 
 func (f Fit) Mod(rhs Fit) (Fit, bool) {
-	return Mod(f.Decimal, rhs.Decimal).Fit(f.Size)
+	return f.Decimal.Mod(rhs.Decimal).Fit(f.Size)
 }
 
 func (f Fit) DivMod(rhs Fit) (div Fit, mod Fit, fit bool) {
-	dd, md := DivMod(f.Decimal, rhs.Decimal)
+	dd, md := f.Decimal.DivMod(rhs.Decimal)
 	return fitPair(dd, md, f.Size)
 }
 
 func (f Fit) DivTail(rhs Fit) (Fit, Fit, bool) {
-	dd, md := DivTail(f.Decimal, rhs.Decimal)
+	dd, md := f.Decimal.DivTail(rhs.Decimal)
 	return fitPair(dd, md, f.Size)
 }
 
 func (f Fit) Abs() Fit {
-	return mustFit(Abs(f.Decimal).Fit(f.Size))
+	return mustFit(f.Decimal.Abs().Fit(f.Size))
 }
 
 func (f Fit) Neg() (Fit, bool) {
-	return Neg(f.Decimal).Fit(f.Size)
+	return f.Decimal.Neg().Fit(f.Size)
 }
 
 func (f Fit) Cmp(rhs Fit) int {
-	return Cmp(f.Decimal, rhs.Decimal)
+	return f.Decimal.Cmp(rhs.Decimal)
 }
 
 func (f Fit) MustAdd(rhs Fit) Fit {

@@ -32,7 +32,7 @@ type typePrecisionWrapper interface {
 
 func marshalText[T typePrecisionWrapper](d T) ([]byte, error) {
 	value := d.GetDecimal()
-	if value.precision != d.TypePrecision() {
+	if value.Precision() != d.TypePrecision() {
 		return nil, ErrTypePrecisionMismatch
 	}
 	return []byte(fmt.Sprintf("%q", value.String())), nil
