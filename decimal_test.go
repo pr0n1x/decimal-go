@@ -23,3 +23,13 @@ func Test_FromBigInt(t *testing.T) {
 		t.Fatal("FromUnits(big.NewInt(n)).Units().Int64() != n")
 	}
 }
+
+func TestParseNeg(t *testing.T) {
+	n, err := Nano.Parse("-2.203")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, expected := n.Int64(), int64(-2_203_000_000); got != expected {
+		t.Errorf("MustParse(\"-2.203\").Int64() != %d, got %d", expected, got)
+	}
+}

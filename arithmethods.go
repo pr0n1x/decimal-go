@@ -39,3 +39,7 @@ func (d Decimal) Neg() Decimal {
 func (d Decimal) Cmp(rhs Decimal) int {
 	return Cmp(d, rhs)
 }
+
+func (d Decimal) Round(r Precision, m RoundingMode) Decimal {
+	return Round(d, r, m)
+}

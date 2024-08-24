@@ -90,6 +90,7 @@ func Abs(signed Decimal) (absolute Decimal) {
 }
 
 func Neg(a Decimal) (neg Decimal) {
+	neg.value = &big.Int{}
 	neg.value.Neg(a.value)
 	neg.precision = a.precision
 	return neg
@@ -98,4 +99,49 @@ func Neg(a Decimal) (neg Decimal) {
 func Cmp(a, b Decimal) int {
 	coercePrecision(&a, &b)
 	return a.value.Cmp(b.value)
+}
+
+type RoundingMode uint8
+
+const (
+	HalfEven RoundingMode = iota // == IEEE 754-2008 roundTiesToEven
+	HalfUp                       // == IEEE 754-2008 roundTiesToAway
+	HalfDown                     // no IEEE 754-2008 equivalent
+	// TODO: Implement other rounding modes
+	//ToZero                            // == IEEE 754-2008 roundTowardZero
+	//AwayFromZero                      // no IEEE 754-2008 equivalent
+	//ToNegativeInf                     // == IEEE 754-2008 roundTowardNegative
+	//ToPositiveInf                     // == IEEE 754-2008 roundTowardPositive
+)
+
+func Round(d Decimal, r Precision, m RoundingMode) Decimal {
+	switch m {
+	case HalfEven, HalfUp, HalfDown:
+	default:
+		panic("invalid rounding mode")
+	}
+	sign := d.Units().Sign()
+	if d.precision <= r || sign == 0 {
+		return d.Copy()
+	}
+	rounded := d.Rescale(r)
+	unit := r.Unit()
+	switch m {
+	case HalfEven, HalfUp, HalfDown:
+		half := Unit(r + 1).Mul(FromUInt64(5, 0))
+		mod := d.Abs().Rescale(r + 1).Mod(unit)
+		halfDeflection := mod.Cmp(half)
+		if halfDeflection == 0 && m == HalfEven {
+			if rounded.Mod(FromUInt64(2, 0)).Int64() != 0 {
+				rounded = rounded.Add(unit)
+			}
+		} else if (halfDeflection == 0 && m == HalfUp) || halfDeflection > 0 {
+			if sign > 0 {
+				rounded = rounded.Add(unit)
+			} else {
+				rounded = rounded.Sub(unit)
+			}
+		}
+	}
+	return rounded
 }

@@ -19,6 +19,18 @@ func Test_Add_DifferentPrecision(t *testing.T) {
 	}
 }
 
+func Test_AddNeg(t *testing.T) {
+	a := MustParse("3.300003001", 9)
+	b := MustParse("-2.200002", 6)
+	res := Add(a, b)
+	if res.Units().Uint64() != 1_100_001_001 {
+		t.Fatal("invalid add negative number")
+	}
+	if res.Precision() != 9 {
+		t.Fatal("result should have precision of 9 decimal places")
+	}
+}
+
 func Test_Mul_Fractional(t *testing.T) {
 	res := Nano.MustParse("0.5").Mul(Nano.MustParse("0.5"))
 	if strVal := res.String(); strVal != "0.25" {

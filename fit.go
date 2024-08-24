@@ -34,8 +34,8 @@ var (
 
 func (d Decimal) Fit(size FitSize, reduce ...fitReduceFlag) (val Fit, fit bool) {
 	val, fit = Fit{Decimal: d, Size: size}, checkNumberSize(d.value, uint(size))
+	// TODO: call reducePrecisionToFit256
 	if !fit && len(reduce) > 0 && bool(reduce[0]) {
-		// TODO: call reducePrecisionToFit256
 		return val, fit
 	}
 	return val, fit

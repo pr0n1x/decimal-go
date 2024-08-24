@@ -59,7 +59,17 @@ func (d Decimal) Rescale(p Precision) Decimal {
 		return FromUnits((&big.Int{}).Mul(d.value, (p-d.precision).Multiplier()), p)
 	}
 	if p < d.precision {
-		return FromUnits((&big.Int{}).Div(d.value, (d.precision-p).Multiplier()), p)
+		multiplier := (d.precision - p).Multiplier()
+		value := &big.Int{}
+		if d.value.Sign() < 0 {
+			mod := (&big.Int{}).Set(d.value)
+			mod.Abs(mod)
+			mod.Mod(mod, multiplier)
+			value.Add(d.value, mod)
+		} else {
+			value.Set(d.value)
+		}
+		return FromUnits(value.Div(value, multiplier), p)
 	}
 	return d.Copy()
 }
@@ -103,6 +113,20 @@ func (d Decimal) String() string {
 	}
 
 	return a
+}
+
+func (d Decimal) UInt64() uint64 {
+	if d.value == nil {
+		return 0
+	}
+	return d.value.Uint64()
+}
+
+func (d Decimal) Int64() int64 {
+	if d.value == nil {
+		return 0
+	}
+	return d.value.Int64()
 }
 
 // FromUnits creates Decimal from a raw *big.Int value and a precision
@@ -174,8 +198,11 @@ func Parse(val string, precision Precision) (Decimal, error) {
 
 		digits := len(lo.String()) // =_=
 		lo = lo.Mul(lo, (&big.Int{}).Exp(big.NewInt(10), big.NewInt(int64((int(precision)-leadZeroes)-digits)), nil))
-
-		hi = hi.Add(hi, lo)
+		if hi.Sign() < 0 && lo.Sign() > 0 {
+			hi = hi.Sub(hi, lo)
+		} else {
+			hi = hi.Add(hi, lo)
+		}
 	}
 
 	return FromUnits(hi, precision), nil
