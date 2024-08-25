@@ -116,22 +116,24 @@ func Test_DivTail(t *testing.T) {
 	for _, frac := range []fraction{
 		{numerator: MustParse("1.004", Milli),
 			denominator: MustParse("0.6", Milli)},
+		{numerator: MustParse("1.004", Milli),
+			denominator: MustParse("0.06", Milli)},
 		{numerator: MustParse("1.000000004", Quecto),
 			denominator: MustParse("0.6", Quecto)},
 		{numerator: MustParse("39.999999999999999999999999999999", Quecto),
 			denominator: MustParse("131072", Quecto)},
+		{numerator: MustParse("1.2", Milli),
+			denominator: MustParse("0.6", Milli)},
 	} {
 		numerator, denominator := frac.numerator, frac.denominator
 		res, tail := numerator.DivTail(denominator)
-		if tail.Precision() <= res.Precision() {
-			t.Fatal("invalid DivTail: tail exp should be greater than result exp")
+		if 2*res.Precision() != tail.Precision() {
+			t.Fatal("invalid DivTail: the tail precision should be twice the result precision")
 		}
-		if tail.Precision()-res.Precision() > 1 {
-			t.Fatal("invalid DivTail: tail and result exp difference should be equal to 1")
-		}
-		res.Mutable().Rescale(res.Precision() + 1)
-		if res.Mul(denominator).Add(tail).Cmp(numerator) != 0 {
-			t.Fatal("invalid DivTail")
+		res.Mutable().Rescale(res.Precision() * 2)
+		if rev := res.Mul(denominator).Add(tail); rev.Cmp(numerator) != 0 {
+			t.Fatalf("invalid DivTail: reversed = result * denuminator, but: %s != %s * %s",
+				rev.String(), res.String(), denominator.String())
 		}
 	}
 }

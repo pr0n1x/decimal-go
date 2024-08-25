@@ -58,13 +58,14 @@ func (d *DecimalMut) Div(rhs Decimal) *DecimalMut {
 // DivTail returns a division result and a tail (residual/remainder related to a precision)
 func (d *DecimalMut) DivTail(rhs Decimal, tail *DecimalMut) (*DecimalMut, *DecimalMut) {
 	d.coercePrecision(&rhs)
+	tailAlloc := DecimalMut{exp: d.exp * 2, val: *big.NewInt(0)}
 	if tail == nil {
-		tail = &DecimalMut{exp: 0, val: *big.NewInt(0)}
+		tail = &tailAlloc
+	} else {
+		*tail = tailAlloc
 	}
 	d.val.Mul(&d.val, d.exp.Multiplier())
 	d.val.DivMod(&d.val, &rhs.p.val, &tail.val)
-	tail.val.Div(&tail.val, (d.exp - 1).Multiplier())
-	tail.exp += 1
 	return d, tail
 }
 
@@ -85,14 +86,13 @@ func (d *DecimalMut) DivMod(rhs Decimal, m *DecimalMut) (*DecimalMut, *DecimalMu
 	return d, m
 }
 
-func (d *DecimalMut) Abs(a Decimal) *DecimalMut {
-	d.exp = a.p.exp
-	d.val.Abs(&a.p.val)
+func (d *DecimalMut) Abs() *DecimalMut {
+	d.val.Abs(&d.val)
 	return d
 }
 
-func (d *DecimalMut) Neg(a Decimal) *DecimalMut {
-	d.val.Neg(&a.p.val)
+func (d *DecimalMut) Neg() *DecimalMut {
+	d.val.Neg(&d.val)
 	return d
 }
 
@@ -124,7 +124,7 @@ func (d *DecimalMut) Round(r Precision, m RoundingMode) *DecimalMut {
 	switch m {
 	case HalfEven, HalfUp, HalfDown:
 		half := Unit(r + 1).Mul(FromUInt64(5, 0))
-		mod := d.Abs(d.Value()).Rescale(r + 1)
+		mod := d.Abs().Rescale(r + 1)
 		mod.Mod(unit)
 		halfDeflection := mod.Value().Cmp(half)
 		if halfDeflection == 0 && m == HalfEven {

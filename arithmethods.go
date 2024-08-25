@@ -26,16 +26,16 @@ func (d Decimal) DivMod(rhs Decimal) (div, mod Decimal) {
 }
 
 func (d Decimal) DivTail(rhs Decimal) (div, tail Decimal) {
-	dm, tm := d.p.Copy().DivTail(rhs, d.p.exp.Zero().Mutable())
+	dm, tm := d.p.Copy().DivTail(rhs, nil)
 	return dm.Value(), tm.Value()
 }
 
 func (d Decimal) Abs() Decimal {
-	return d.p.exp.Zero().Mutable().Abs(d).Value()
+	return d.p.Copy().Abs().Value()
 }
 
 func (d Decimal) Neg() Decimal {
-	return d.p.exp.Zero().Mutable().Neg(d).Value()
+	return d.p.Copy().Neg().Value()
 }
 
 func (d Decimal) Cmp(rhs Decimal) int {
