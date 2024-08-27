@@ -35,7 +35,7 @@ func PrecisionMultiplier(p Precision) *big.Int {
 	return &value
 }
 
-func (d Decimal) Mutable() *DecimalMut {
+func (d Decimal) Ptr() *DecimalMut {
 	return d.p
 }
 
@@ -60,11 +60,17 @@ func (d Decimal) Sign() int {
 }
 
 func (d Decimal) Rescale(p Precision) Decimal {
-	return d.p.Copy().Rescale(p).Value()
+	return d.p.Copy().Rescale(p).Val()
+}
+
+func (d Decimal) RescaleRem(p Precision) (rescaled, remainder Decimal) {
+	rescaled = d.p.Copy().Val()
+	remainder = rescaled.p.RescaleRem(p)
+	return rescaled, remainder
 }
 
 func (d Decimal) Copy() Decimal {
-	return d.p.Copy().Value()
+	return d.p.Copy().Val()
 }
 
 func (d Decimal) String() string {
@@ -72,12 +78,15 @@ func (d Decimal) String() string {
 		return "0"
 	}
 
-	a := d.p.val.String()
-	if a == "0" {
+	sign := d.p.val.Sign()
+	if sign == 0 {
 		// process 0 faster and simpler
-		return a
+		return "0"
 	}
-
+	a := d.p.val.String()
+	if sign < 0 {
+		a = a[1:]
+	}
 	splitter := len(a) - int(d.p.exp)
 	if splitter <= 0 {
 		a = "0." + strings.Repeat("0", int(d.p.exp)-len(a)) + a
@@ -98,6 +107,9 @@ func (d Decimal) String() string {
 		}
 	}
 
+	if sign < 0 {
+		a = "-" + a
+	}
 	return a
 }
 

@@ -11,8 +11,13 @@ type Fit struct {
 }
 type FitSize uint32
 
-var Fit128 FitSize = 16
-var Fit256 FitSize = 32
+var (
+	Fit32  FitSize = 4
+	Fit64  FitSize = 8
+	Fit128 FitSize = 16
+	Fit256 FitSize = 32
+	Fit512 FitSize = 64
+)
 
 func (s FitSize) BitsLen() uint64 {
 	return uint64(s) * 8
@@ -28,13 +33,16 @@ type fitReduceFlag bool
 const FitReduce fitReduceFlag = true
 
 var (
+	Max32BitsValue  = Fit32.MaxValue()
+	Max64BitsValue  = Fit64.MaxValue()
 	Max128BitsValue = Fit128.MaxValue()
 	Max256BitsValue = Fit256.MaxValue()
+	Max512BitsValue = Fit512.MaxValue()
 )
 
 func (d Decimal) Fit(size FitSize, reduce ...fitReduceFlag) (val Fit, fit bool) {
 	val, fit = Fit{Decimal: d, Size: size}, checkNumberSize(&d.p.val, uint(size))
-	// TODO: call reducePrecisionToFit256
+	// TODO: call reducePrecisionToFit
 	if !fit && len(reduce) > 0 && bool(reduce[0]) {
 		return val, fit
 	}
@@ -151,5 +159,5 @@ func fitPair(a, b Decimal, size FitSize) (ar Fit, br Fit, fit bool) {
 	return ar, br, fit
 }
 
-// TODO: implement reducePrecisionToFit256
+// TODO: implement reducePrecisionToFit
 //func reducePrecisionToFit256()

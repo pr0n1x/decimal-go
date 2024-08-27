@@ -1,11 +1,14 @@
 package dec
 
-import "math/big"
+import (
+	"math/big"
+)
 
-type Precision uint64
+type Precision uint16
 
 // https://www.nist.gov/pml/owm/metric-si-prefixes
 const (
+	Z      Precision = 0
 	Deci   Precision = 1
 	Centi  Precision = 2
 	Milli  Precision = 3
@@ -19,6 +22,21 @@ const (
 	Ronto  Precision = 27
 	Quecto Precision = 30
 )
+
+func (p Precision) Increase(delta Precision) (Precision, bool) {
+	const maxUint16 = 1<<16 - 1 // 65535
+	if delta > maxUint16 || maxUint16-delta < p {
+		return p, false
+	}
+	return p + delta, true
+}
+
+func (p Precision) Decrease(delta Precision) (Precision, bool) {
+	if delta < 0 || delta > p {
+		return p, false
+	}
+	return p - delta, true
+}
 
 func (p Precision) Zero() Decimal { return Zero(p) }
 

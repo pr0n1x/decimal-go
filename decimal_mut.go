@@ -5,6 +5,8 @@ import (
 	"math/big"
 )
 
+var bigOne = new(big.Int).SetInt64(1)
+
 type DecimalMut struct {
 	exp Precision
 	val big.Int
@@ -22,29 +24,36 @@ func NewDecimalMut(val *big.Int, precision Precision) *DecimalMut {
 	return &d
 }
 
-func (d *DecimalMut) Value() Decimal {
+func (d *DecimalMut) Val() Decimal {
 	return Decimal{p: d}
 }
 
-func (d *DecimalMut) Rescale(p Precision) *DecimalMut {
+func (d *DecimalMut) RescaleRem(p Precision) (remainder Decimal) {
 	if d == nil {
-		return nil
+		return
 	}
 	if p > d.exp {
 		d.val.Mul(&d.val, (p - d.exp).Multiplier())
 	} else if p < d.exp {
 		multiplier := (d.exp - p).Multiplier()
+		remainder.p = &DecimalMut{exp: d.exp, val: big.Int{}}
+		rem := &remainder.p.val
 		if d.val.Sign() < 0 {
-			mod := (&big.Int{}).Set(&d.val)
-			mod.Abs(mod)
-			mod.Mod(mod, multiplier)
-			d.val.Add(&d.val, mod)
+			rem.Set(&d.val)
+			rem.Abs(rem)
+			rem.Mod(rem, multiplier)
+			d.val.Add(&d.val, rem)
+			d.val.Div(&d.val, multiplier)
 		} else {
-			d.val.Set(&d.val)
+			d.val.DivMod(&d.val, multiplier, rem)
 		}
-		d.val.Div(&d.val, multiplier)
 	}
 	d.exp = p
+	return
+}
+
+func (d *DecimalMut) Rescale(p Precision) *DecimalMut {
+	d.RescaleRem(p)
 	return d
 }
 

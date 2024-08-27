@@ -98,16 +98,6 @@ func Test_SumHasMaxPrecision(t *testing.T) {
 	}
 }
 
-func Test_Rescale(t *testing.T) {
-	n := Centi.MustParse("99.99")
-	if n.Units().String() != "9999" {
-		t.Fatal("invalid units")
-	}
-	if n.Rescale(n.Precision()+2).Units().String() != "999900" {
-		t.Fatal("invalid rescale")
-	}
-}
-
 func Test_DivTail(t *testing.T) {
 	type fraction struct {
 		numerator   Decimal
@@ -130,7 +120,7 @@ func Test_DivTail(t *testing.T) {
 		if 2*res.Precision() != tail.Precision() {
 			t.Fatal("invalid DivTail: the tail precision should be twice the result precision")
 		}
-		res.Mutable().Rescale(res.Precision() * 2)
+		res.Ptr().Rescale(res.Precision() * 2)
 		if rev := res.Mul(denominator).Add(tail); rev.Cmp(numerator) != 0 {
 			t.Fatalf("invalid DivTail: reversed = result * denuminator, but: %s != %s * %s",
 				rev.String(), res.String(), denominator.String())

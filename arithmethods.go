@@ -1,41 +1,50 @@
 package dec
 
+import "math/big"
+
+func (d Decimal) lhs() *DecimalMut {
+	if d.p == nil {
+		return &DecimalMut{exp: 0, val: big.Int{}}
+	}
+	return d.p.Copy()
+}
+
 func (d Decimal) Add(rhs Decimal) Decimal {
-	return d.p.Copy().Add(rhs).Value()
+	return d.lhs().Add(rhs).Val()
 }
 
 func (d Decimal) Sub(rhs Decimal) Decimal {
-	return d.p.Copy().Sub(rhs).Value()
+	return d.lhs().Sub(rhs).Val()
 }
 
 func (d Decimal) Mul(rhs Decimal) Decimal {
-	return d.p.Copy().Mul(rhs).Value()
+	return d.lhs().Mul(rhs).Val()
 }
 
 func (d Decimal) Div(rhs Decimal) Decimal {
-	return d.p.Copy().Div(rhs).Value()
+	return d.lhs().Div(rhs).Val()
 }
 
 func (d Decimal) Mod(rhs Decimal) Decimal {
-	return d.p.Copy().Mod(rhs).Value()
+	return d.lhs().Mod(rhs).Val()
 }
 
 func (d Decimal) DivMod(rhs Decimal) (div, mod Decimal) {
-	dm, tm := d.p.Copy().DivMod(rhs, d.p.exp.Zero().Mutable())
-	return dm.Value(), tm.Value()
+	dm, tm := d.lhs().DivMod(rhs, d.p.exp.Zero().Ptr())
+	return dm.Val(), tm.Val()
 }
 
 func (d Decimal) DivTail(rhs Decimal) (div, tail Decimal) {
-	dm, tm := d.p.Copy().DivTail(rhs, nil)
-	return dm.Value(), tm.Value()
+	dm, tm := d.lhs().DivTail(rhs, nil)
+	return dm.Val(), tm.Val()
 }
 
 func (d Decimal) Abs() Decimal {
-	return d.p.Copy().Abs().Value()
+	return d.lhs().Abs().Val()
 }
 
 func (d Decimal) Neg() Decimal {
-	return d.p.Copy().Neg().Value()
+	return d.lhs().Neg().Val()
 }
 
 func (d Decimal) Cmp(rhs Decimal) int {
@@ -43,7 +52,7 @@ func (d Decimal) Cmp(rhs Decimal) int {
 	if rhs.p == nil {
 		rhs.p = &DecimalMut{}
 	}
-	lhs := d.p
+	lhs := d.lhs()
 	if lhs.exp != rhs.p.exp {
 		if lhs.exp < rhs.p.exp {
 			lhs = lhs.Copy().Rescale(rhs.p.exp)
@@ -56,5 +65,5 @@ func (d Decimal) Cmp(rhs Decimal) int {
 }
 
 func (d Decimal) Round(r Precision, m RoundingMode) Decimal {
-	return d.p.Copy().Round(r, m).Value()
+	return d.lhs().Round(r, m).Val()
 }
