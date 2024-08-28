@@ -117,14 +117,14 @@ func (d Decimal) UInt64() uint64 {
 	if d.p == nil {
 		return 0
 	}
-	return d.p.val.Uint64()
+	return d.p.val.Div(&d.p.val, d.p.exp.Multiplier()).Uint64()
 }
 
 func (d Decimal) Int64() int64 {
 	if d.p == nil {
 		return 0
 	}
-	return d.p.val.Int64()
+	return d.p.val.Div(&d.p.val, d.p.exp.Multiplier()).Int64()
 }
 
 // FromUnits creates Decimal from a raw *big.Int value and a precision

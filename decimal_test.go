@@ -29,7 +29,7 @@ func TestParseNeg(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, expected := n.Int64(), int64(-2_203_000_000); got != expected {
+	if got, expected := n.Units().Int64(), int64(-2_203_000_000); got != expected {
 		t.Errorf("MustParse(\"-2.203\").Int64() != %d, got %d", expected, got)
 	}
 }
@@ -41,5 +41,21 @@ func TestNegativeLtZero(t *testing.T) {
 	}
 	if got, expected := n.Div(Nano.FromUInt64(100)).String(), "-0.0123"; got != expected {
 		t.Errorf("wrong negative value lower than zero: expected %q, got %q", expected, got)
+	}
+}
+
+func TestToUInt64(t *testing.T) {
+	n := uint64(123)
+	d := Nano.FromUInt64(n)
+	if d.UInt64() != n {
+		t.Errorf("wrong u64 value; expected %d, got %d", n, d.UInt64())
+	}
+}
+
+func TestToInt64(t *testing.T) {
+	n := int64(123)
+	d := Nano.FromInt64(n)
+	if d.Int64() != n {
+		t.Errorf("wrong u64 value; expected %d, got %d", n, d.UInt64())
 	}
 }
