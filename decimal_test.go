@@ -59,3 +59,13 @@ func TestToInt64(t *testing.T) {
 		t.Errorf("wrong u64 value; expected %d, got %d", n, d.UInt64())
 	}
 }
+
+func TestDecimalMutNilPointer(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("operation on nil *DecimalMut pointer should panic")
+		}
+	}()
+	var nilPtr *DecimalMut = nil
+	nilPtr.Add(Z.FromUInt64(2))
+}

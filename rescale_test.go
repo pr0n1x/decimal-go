@@ -20,7 +20,7 @@ func Test_RescaleUp(t *testing.T) {
 		}
 		up := n.Copy()
 		delta := Precision(3)
-		remainder := up.Ptr().RescaleRem(assert.Ok(n.Precision().Increase(delta)))
+		remainder := up.Var().RescaleRem(assert.Ok(n.Precision().Increase(delta)))
 		if got := up.Units().String(); got != unitsAfter {
 			t.Fatalf("invalid rescale up: expected units after rescale %s, got %s", unitsAfter, got)
 		}
@@ -48,7 +48,7 @@ func Test_RescaleDown(t *testing.T) {
 		}
 		down := n.Copy()
 		delta := Precision(2)
-		remainder := down.Ptr().RescaleRem(assert.Ok(n.Precision().Decrease(delta)))
+		remainder := down.Var().RescaleRem(assert.Ok(n.Precision().Decrease(delta)))
 		if got := down.Units().String(); got != unitsAfter {
 			t.Fatalf("invalid rescale down: expected units after rescale %s, got %s", unitsAfter, got)
 		}

@@ -120,7 +120,7 @@ func Test_DivTail(t *testing.T) {
 		if 2*res.Precision() != tail.Precision() {
 			t.Fatal("invalid DivTail: the tail precision should be twice the result precision")
 		}
-		res.Ptr().Rescale(res.Precision() * 2)
+		res.Var().Rescale(res.Precision() * 2)
 		if rev := res.Mul(denominator).Add(tail); rev.Cmp(numerator) != 0 {
 			t.Fatalf("invalid DivTail: reversed = result * denuminator, but: %s != %s * %s",
 				rev.String(), res.String(), denominator.String())

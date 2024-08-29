@@ -35,7 +35,7 @@ func PrecisionMultiplier(p Precision) *big.Int {
 	return &value
 }
 
-func (d Decimal) Ptr() *DecimalMut {
+func (d Decimal) Var() *DecimalMut {
 	return d.p
 }
 

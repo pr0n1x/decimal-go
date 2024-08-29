@@ -46,7 +46,7 @@ twenty := number.Mod(hundred).Sub(three)
 hundred := dec.Nano.FromUInt64(100)
 three := dec.Deci.FromInt64(3)
 number := dec.Milli.FromInt64(123) // number == 123
-number.Ptr().Mod(hundred)          // number == 23
-number.Ptr().Sub(three)            // number == 20
+number.Var().Mod(hundred)          // number == 23
+number.Var().Sub(three)            // number == 20
 // precision will be coerced to maximum of all operated numbers i.e. Nano (9)
 ```

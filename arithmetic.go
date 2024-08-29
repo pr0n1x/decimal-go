@@ -5,6 +5,9 @@ import (
 )
 
 func (d *DecimalMut) coercePrecision(rhs *Decimal) *DecimalMut {
+	if d == nil {
+		panic("operation on nil *DecimalMut pointer")
+	}
 	if rhs.p == nil {
 		rhs.p = &DecimalMut{}
 	}

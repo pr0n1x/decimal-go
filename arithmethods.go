@@ -30,7 +30,7 @@ func (d Decimal) Mod(rhs Decimal) Decimal {
 }
 
 func (d Decimal) DivMod(rhs Decimal) (div, mod Decimal) {
-	dm, tm := d.lhs().DivMod(rhs, d.p.exp.Zero().Ptr())
+	dm, tm := d.lhs().DivMod(rhs, d.p.exp.Zero().Var())
 	return dm.Val(), tm.Val()
 }
 
