@@ -1,7 +1,7 @@
 package dec
 
 import "testing"
-import "github.com/pr0n1x/decimal-go/assert"
+import "github.com/pr0n1x/go-type-wrappers/assert"
 
 func Test_RescaleUp(t *testing.T) {
 	for _, testCase := range []struct {
