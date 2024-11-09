@@ -1,11 +1,10 @@
 package dec
 
 import (
-	"github.com/pr0n1x/go-type-wrappers/werr"
 	"math/big"
-)
 
-var bigOne = new(big.Int).SetInt64(1)
+	"github.com/pr0n1x/go-type-wrappers/werr"
+)
 
 type DecimalMut struct {
 	exp Precision
@@ -14,7 +13,7 @@ type DecimalMut struct {
 
 var ErrInvalidDecimalString = werr.New("invalid decimal value string")
 
-// NewDecimalMut creates *DecimalMut from a raw *big.Int value and a precision
+// NewDecimalMut creates *DecimalMut from a raw *big.Int value and a precision.
 func NewDecimalMut(val *big.Int, precision Precision) *DecimalMut {
 	d := DecimalMut{
 		exp: precision,

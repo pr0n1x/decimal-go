@@ -3,9 +3,9 @@ package dec
 import "testing"
 
 type roundTestCase struct {
-	n Decimal   // number
-	r Precision // round precision
-	e string    // expected
+	n Decimal   // number.
+	r Precision // round precision.
+	e string    // expected.
 }
 
 func Test_RoundHalfUp(t *testing.T) {
@@ -27,7 +27,6 @@ func Test_RoundHalfUp(t *testing.T) {
 			t.Fatalf("invalid Round, expected %s, got %s", expected, got)
 		}
 	}
-
 }
 
 func Test_RoundHalfDown(t *testing.T) {

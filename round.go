@@ -3,14 +3,14 @@ package dec
 type RoundingMode uint8
 
 const (
-	HalfEven     RoundingMode = iota // == IEEE 754-2008 roundTiesToEven
-	HalfUp                           // == IEEE 754-2008 roundTiesToAway
-	HalfDown                         // no IEEE 754-2008 equivalent
-	ToZero                           // == IEEE 754-2008 roundTowardZero
-	AwayFromZero                     // no IEEE 754-2008 equivalent
+	HalfEven     RoundingMode = iota // == IEEE 754-2008 roundTiesToEven.
+	HalfUp                           // == IEEE 754-2008 roundTiesToAway.
+	HalfDown                         // no IEEE 754-2008 equivalent.
+	ToZero                           // == IEEE 754-2008 roundTowardZero.
+	AwayFromZero                     // no IEEE 754-2008 equivalent.
 	// TODO: Implement other rounding modes
-	//ToNegativeInf                     // == IEEE 754-2008 roundTowardNegative
-	//ToPositiveInf                     // == IEEE 754-2008 roundTowardPositive
+
+	//ToPositiveInf                     // == IEEE 754-2008 roundTowardPositive.
 )
 
 func (d *DecimalMut) Round(r Precision, m RoundingMode) *DecimalMut {

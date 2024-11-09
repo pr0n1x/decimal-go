@@ -58,7 +58,7 @@ func (d *DecimalMut) Div(rhs Decimal) *DecimalMut {
 	return d
 }
 
-// DivTail returns a division result and a tail (residual/remainder related to a precision)
+// DivTail returns a division result and a tail (residual/remainder related to a precision).
 func (d *DecimalMut) DivTail(rhs Decimal, tail *DecimalMut) (*DecimalMut, *DecimalMut) {
 	d.coercePrecision(&rhs)
 	tailAlloc := DecimalMut{exp: d.exp * 2, val: *big.NewInt(0)}

@@ -104,16 +104,26 @@ func Test_DivTail(t *testing.T) {
 		denominator Decimal
 	}
 	for _, frac := range []fraction{
-		{numerator: MustParse("1.004", Milli),
-			denominator: MustParse("0.6", Milli)},
-		{numerator: MustParse("1.004", Milli),
-			denominator: MustParse("0.06", Milli)},
-		{numerator: MustParse("1.000000004", Quecto),
-			denominator: MustParse("0.6", Quecto)},
-		{numerator: MustParse("39.999999999999999999999999999999", Quecto),
-			denominator: MustParse("131072", Quecto)},
-		{numerator: MustParse("1.2", Milli),
-			denominator: MustParse("0.6", Milli)},
+		{
+			numerator:   MustParse("1.004", Milli),
+			denominator: MustParse("0.6", Milli),
+		},
+		{
+			numerator:   MustParse("1.004", Milli),
+			denominator: MustParse("0.06", Milli),
+		},
+		{
+			numerator:   MustParse("1.000000004", Quecto),
+			denominator: MustParse("0.6", Quecto),
+		},
+		{
+			numerator:   MustParse("39.999999999999999999999999999999", Quecto),
+			denominator: MustParse("131072", Quecto),
+		},
+		{
+			numerator:   MustParse("1.2", Milli),
+			denominator: MustParse("0.6", Milli),
+		},
 	} {
 		numerator, denominator := frac.numerator, frac.denominator
 		res, tail := numerator.DivTail(denominator)
