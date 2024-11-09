@@ -20,9 +20,7 @@ type (
 	TextQuecto Decimal
 )
 
-var (
-	ErrTypePrecisionMismatch = errors.New("decimal value and type precisions mismatch")
-)
+var ErrTypePrecisionMismatch = errors.New("decimal value and type precisions mismatch")
 
 type typePrecisionWrapper interface {
 	TypePrecision() Precision
