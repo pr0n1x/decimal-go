@@ -1,4 +1,4 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/pr0n1x/go-type-wrappers v0.4.0 h1:Py3vCi72/5wycTue8K2833PK+uDlvWcvHaohsBGFTzs=
-github.com/pr0n1x/go-type-wrappers v0.4.0/go.mod h1:6xI/CXIDR5ASqc6unrKe0wGwFpAiY+TFKheB0GEbKOU=
+github.com/pr0n1x/go-type-wrappers v0.5.1 h1:Yj+bT3FUhSair+/zi9clNSJ0Vj4rXnYnsWSn5A9mRtE=
+github.com/pr0n1x/go-type-wrappers v0.5.1/go.mod h1:6xI/CXIDR5ASqc6unrKe0wGwFpAiY+TFKheB0GEbKOU=
