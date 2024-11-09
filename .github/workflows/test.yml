@@ -1,0 +1,35 @@
+name: test
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'v*'
+  pull_request:
+    branches:
+      - 'main'
+      - 'v*'
+  schedule:
+    - cron: '0 8 * * 1' # run "At 08:00 on Monday"ma
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        go-version: ['stable', 'oldstable']
+        os: ['windows-latest', 'ubuntu-latest']
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install Go stable
+        uses: actions/setup-go@master
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+
+      - name: Test
+        run: |
+          go test -v -race ./...
