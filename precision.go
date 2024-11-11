@@ -44,7 +44,9 @@ func (p Precision) One() Decimal { return One(p) }
 
 func (p Precision) Ten() Decimal { return Ten(p) }
 
-func (p Precision) Multiplier() *big.Int { return PrecisionMultiplier(p) }
+func (p Precision) Multiplier() *big.Int {
+	return (&big.Int{}).Set(p.multiplierPromiseReadOnly())
+}
 
 func (p Precision) Unit() Decimal { return Unit(p) }
 

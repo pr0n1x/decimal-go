@@ -10,6 +10,8 @@ type Decimal struct {
 	p *DecimalMut
 }
 
+const BASE = 10
+
 // TODO: add methods Ceil, Floor, Round, Pow, Avg(first Decimal, rest ...Decimal).
 
 func Zero(p Precision) Decimal {
@@ -21,18 +23,11 @@ func One(p Precision) Decimal {
 }
 
 func Ten(p Precision) Decimal {
-	return FromUInt64(10, p)
+	return FromUInt64(BASE, p)
 }
 
 func Unit(p Precision) Decimal {
 	return FromUnits((&big.Int{}).SetUint64(1), p)
-}
-
-func PrecisionMultiplier(p Precision) *big.Int {
-	var value big.Int
-	value.SetUint64(10)
-	value.Exp(&value, big.NewInt(int64(p)), nil)
-	return &value
 }
 
 func (d Decimal) Var() *DecimalMut {
@@ -117,14 +112,14 @@ func (d Decimal) UInt64() uint64 {
 	if d.p == nil {
 		return 0
 	}
-	return d.p.val.Div(&d.p.val, d.p.exp.Multiplier()).Uint64()
+	return d.p.val.Div(&d.p.val, d.p.exp.multiplierPromiseReadOnly()).Uint64()
 }
 
 func (d Decimal) Int64() int64 {
 	if d.p == nil {
 		return 0
 	}
-	return d.p.val.Div(&d.p.val, d.p.exp.Multiplier()).Int64()
+	return d.p.val.Div(&d.p.val, d.p.exp.multiplierPromiseReadOnly()).Int64()
 }
 
 // FromUnits creates Decimal from a raw *big.Int value and a precision.
@@ -145,14 +140,14 @@ func FromUnitsInt64(val int64, precision Precision) Decimal {
 // FromUInt64 creates Decimal using uint64 as an integer part of the value.
 func FromUInt64(val uint64, precision Precision) Decimal {
 	value := (&big.Int{}).SetUint64(val)
-	value.Mul(value, precision.Multiplier())
+	value.Mul(value, precision.multiplierPromiseReadOnly())
 	return Decimal{p: NewDecimalMut(value, precision)}
 }
 
 // FromInt64 creates Decimal using int64 as an integer part of the value.
 func FromInt64(val int64, precision Precision) Decimal {
 	value := (&big.Int{}).SetInt64(val)
-	value.Mul(value, precision.Multiplier())
+	value.Mul(value, precision.multiplierPromiseReadOnly())
 	return Decimal{p: NewDecimalMut(value, precision)}
 }
 

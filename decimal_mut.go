@@ -32,9 +32,9 @@ func (d *DecimalMut) RescaleRem(p Precision) (remainder Decimal) {
 		return
 	}
 	if p > d.exp {
-		d.val.Mul(&d.val, (p - d.exp).Multiplier())
+		d.val.Mul(&d.val, (p - d.exp).multiplierPromiseReadOnly())
 	} else if p < d.exp {
-		multiplier := (d.exp - p).Multiplier()
+		multiplier := (d.exp - p).multiplierPromiseReadOnly()
 		remainder.p = &DecimalMut{exp: d.exp, val: big.Int{}}
 		rem := &remainder.p.val
 		if d.val.Sign() < 0 {

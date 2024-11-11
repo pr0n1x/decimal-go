@@ -47,13 +47,13 @@ func (d *DecimalMut) Sub(rhs Decimal) *DecimalMut {
 func (d *DecimalMut) Mul(rhs Decimal) *DecimalMut {
 	d.coercePrecision(&rhs)
 	d.val.Mul(&d.val, &rhs.p.val)
-	d.val.Div(&d.val, d.exp.Multiplier())
+	d.val.Div(&d.val, d.exp.multiplierPromiseReadOnly())
 	return d
 }
 
 func (d *DecimalMut) Div(rhs Decimal) *DecimalMut {
 	d.coercePrecision(&rhs)
-	d.val.Mul(&d.val, d.exp.Multiplier())
+	d.val.Mul(&d.val, d.exp.multiplierPromiseReadOnly())
 	d.val.Div(&d.val, &rhs.p.val)
 	return d
 }
@@ -67,7 +67,7 @@ func (d *DecimalMut) DivTail(rhs Decimal, tail *DecimalMut) (*DecimalMut, *Decim
 	} else {
 		*tail = tailAlloc
 	}
-	d.val.Mul(&d.val, d.exp.Multiplier())
+	d.val.Mul(&d.val, d.exp.multiplierPromiseReadOnly())
 	d.val.DivMod(&d.val, &rhs.p.val, &tail.val)
 	return d, tail
 }
@@ -80,7 +80,7 @@ func (d *DecimalMut) Mod(rhs Decimal) *DecimalMut {
 
 func (d *DecimalMut) DivMod(rhs Decimal, m *DecimalMut) (*DecimalMut, *DecimalMut) {
 	d.coercePrecision(&rhs)
-	precisionMultiplier := d.exp.Multiplier()
+	precisionMultiplier := d.exp.multiplierPromiseReadOnly()
 	aValue := (&big.Int{}).Mul(&d.val, precisionMultiplier)
 	bValue := (&big.Int{}).Mul(&rhs.p.val, precisionMultiplier)
 	d.val.DivMod(aValue, bValue, &m.val)
