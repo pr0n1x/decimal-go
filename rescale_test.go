@@ -3,7 +3,7 @@ package dec
 import (
 	"testing"
 
-	"github.com/pr0n1x/go-type-wrappers/assert"
+	"github.com/pr0n1x/go-liners/assert"
 )
 
 func Test_RescaleUp(t *testing.T) {

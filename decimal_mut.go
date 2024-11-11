@@ -3,7 +3,7 @@ package dec
 import (
 	"math/big"
 
-	"github.com/pr0n1x/go-type-wrappers/werr"
+	"github.com/pr0n1x/go-liners/werr"
 )
 
 type DecimalMut struct {
