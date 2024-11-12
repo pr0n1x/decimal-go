@@ -7,9 +7,13 @@ import (
 	dec "github.com/pr0n1x/decimal-go"
 )
 
+const testPrecision = dec.Quecto
+
+//const testPrecision = dec.Nano
+
 func Benchmark_Decimal_Immutable(b *testing.B) {
-	million := dec.Quecto.MustParse("1000000")
-	divider := dec.Quecto.MustParse("33.67")
+	million := testPrecision.MustParse("1000000")
+	divider := testPrecision.MustParse("33.67")
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -22,10 +26,10 @@ func Benchmark_Decimal_Immutable(b *testing.B) {
 func Benchmark_Decimal_Mutable(b *testing.B) {
 	millions := make([]dec.Decimal, 1_000_000)
 	for i := range millions {
-		millions[i] = dec.Quecto.MustParse("1000000")
+		millions[i] = testPrecision.MustParse("1000000")
 	}
 
-	divider := dec.Quecto.MustParse("33.67")
+	divider := testPrecision.MustParse("33.67")
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
