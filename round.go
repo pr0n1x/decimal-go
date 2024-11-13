@@ -23,37 +23,36 @@ func (d *DecimalMut) Round(r Precision, m RoundingMode) *DecimalMut {
 	if d.exp <= r || sign == 0 {
 		return d
 	}
-	rounded := d.Copy()
-	remainder := rounded.RescaleRem(r)
+	rounding := d.Copy()
+	remainder := rounding.RescaleRem(r)
 	unit := r.Unit()
 	switch m {
 	case HalfEven, HalfUp, HalfDown:
 		half := Unit(r + 1).Mul(FromUInt64(5, 0))
-		halfDeflection := remainder.Rescale(r + 1).Cmp(half)
-		if halfDeflection == 0 && m == HalfEven {
-			if rounded.Copy().Mod(FromUInt64(2, 0)).Val().Int64() != 0 {
-				rounded.Add(unit)
+		if sign < 0 {
+			half.Var().Neg()
+		}
+		halfDeflection := remainder.Cmp(half)
+		switch {
+		case halfDeflection == 0 && m == HalfEven:
+			if rounding.Copy().Mod(FromUInt64(2, 0)).Val().Int64() != 0 {
+				rounding.Add(unit)
 			}
-		} else if (halfDeflection == 0 && m == HalfUp) || halfDeflection > 0 {
-			if sign > 0 {
-				rounded.Add(unit)
-			} else {
-				rounded.Sub(unit)
-			}
+		case sign > 0 && ((halfDeflection == 0 && m == HalfUp) || halfDeflection > 0):
+			rounding.Add(unit)
+		case sign < 0 && ((halfDeflection == 0 && m == HalfDown) || halfDeflection < 0):
+			rounding.Sub(unit)
 		}
 	case ToZero, AwayFromZero:
-		if sign < 0 {
-			func() {}()
-		}
-		if remainder.Cmp(Zero(0)) > 0 && m == AwayFromZero {
+		if remainder.Var().Abs().Val().Cmp(Zero(0)) > 0 && m == AwayFromZero {
 			if sign > 0 {
-				rounded.Add(unit)
+				rounding.Add(unit)
 			} else {
-				rounded.Sub(unit)
+				rounding.Sub(unit)
 			}
 		}
 	}
-	d.val = rounded.val
-	d.exp = rounded.exp
+	d.val = rounding.val
+	d.exp = rounding.exp
 	return d
 }

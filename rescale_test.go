@@ -42,8 +42,8 @@ func Test_RescaleDown(t *testing.T) {
 	}{
 		{num: Milli.MustParse("123.456"), bef: "123456", aft: "1234", rem: "0.056"},
 		{num: Milli.MustParse("654.321"), bef: "654321", aft: "6543", rem: "0.021"},
-		{num: Milli.MustParse("-123.456"), bef: "-123456", aft: "-1234", rem: "0.056"},
-		{num: Milli.MustParse("-654.321"), bef: "-654321", aft: "-6543", rem: "0.021"},
+		{num: Milli.MustParse("-123.456"), bef: "-123456", aft: "-1234", rem: "-0.056"},
+		{num: Milli.MustParse("-654.321"), bef: "-654321", aft: "-6543", rem: "-0.021"},
 	} {
 		n, unitsBefore, unitsAfter, expectedRemainder := testCase.num, testCase.bef, testCase.aft, testCase.rem
 		if n.Units().String() != unitsBefore {

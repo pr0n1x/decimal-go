@@ -69,3 +69,22 @@ func TestDecimalMutNilPointer(t *testing.T) {
 	var nilPtr *DecimalMut = nil
 	nilPtr.Add(Z.FromUInt64(2))
 }
+
+func TestRescaleReminder(t *testing.T) {
+	for _, tc := range []struct {
+		numberString string
+		expectedInt  string
+		expectedFrac string
+	}{
+		{numberString: "123.456", expectedInt: "1234", expectedFrac: "56"},
+		{numberString: "-123.456", expectedInt: "-1234", expectedFrac: "-56"},
+	} {
+		rescaled, rem := Milli.MustParse(tc.numberString).RescaleRem(1)
+		if got, expected := rescaled.Units().String(), tc.expectedInt; got != expected {
+			t.Fatalf("invalid rescaled value: expected '%s', got '%s'", expected, got)
+		}
+		if got, expected := rem.Units().String(), tc.expectedFrac; got != expected {
+			t.Fatalf("invalid rescaled reminder: expected '%s', got '%s'", expected, got)
+		}
+	}
+}

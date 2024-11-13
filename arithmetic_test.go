@@ -45,6 +45,13 @@ func Test_Div_Fractional(t *testing.T) {
 	}
 }
 
+//func Test_Div_FractionRound(t *testing.T) {
+//	res := Nano.FromUInt64(2).Div(Nano.FromUInt64(3)).Round(Nano, HalfUp)
+//	if got, expected := res.String(), "0.666666667"; got != expected {
+//		t.Fatalf("invalid division result last precision digit round: expected %s, got %s", expected, got)
+//	}
+//}
+
 func Test_Mod_Fractional(t *testing.T) {
 	res := Nano.MustParse("0.1").Mod(Nano.MustParse("0.03"))
 	if res, expected := res.String(), "0.01"; res != expected {
