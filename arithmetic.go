@@ -85,14 +85,13 @@ func (d *DecimalMut) Div(rhs Decimal) *DecimalMut {
 
 // DivTail returns a division result and a tail (residual/remainder related to a precision).
 // For the operation `res, tail := x.DivTail(y)`
-// there is a valid equation `x = (res - tail) * y`.
+// there is a valid equation `res * y = x - tail`.
 // e.g. for operation using Milli precision:
 // `res, tail := Milli.FromUint64(2).DivTail(Milli.FromUint64(3))`,
 // result and tail are:
 // res = 0.666
 // tail = 0.002,
-// 0.666 * 2 = 1.998
-// 1.998 + 0.002 = 2.
+// 0.666 * 3 == 2 - 0.002 == 1.998
 func (d *DecimalMut) DivTail(rhs Decimal, tail *DecimalMut) (*DecimalMut, *DecimalMut) {
 	d.coercePrecision(&rhs)
 	if tail == nil {
