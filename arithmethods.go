@@ -21,6 +21,15 @@ func (d Decimal) Mul(rhs Decimal) Decimal {
 	return d.lhs().Mul(rhs).Val()
 }
 
+func (d Decimal) Quo(rhs Decimal) Decimal {
+	return d.lhs().Quo(rhs).Val()
+}
+
+func (d Decimal) QuoRem(rhs Decimal) (quo, rem Decimal) {
+	qm, rm := d.lhs().QuoRem(rhs, nil)
+	return qm.Val(), rm.Val()
+}
+
 func (d Decimal) Div(rhs Decimal) Decimal {
 	return d.lhs().Div(rhs).Val()
 }
@@ -34,9 +43,9 @@ func (d Decimal) DivMod(rhs Decimal) (div, mod Decimal) {
 	return dm.Val(), tm.Val()
 }
 
-func (d Decimal) DivTail(rhs Decimal) (div, tail Decimal) {
-	dm, tm := d.lhs().DivTail(rhs, nil)
-	return dm.Val(), tm.Val()
+func (d Decimal) DivTail(rhs Decimal) (Decimal, Decimal) {
+	div, tail := d.lhs().DivTail(rhs, nil)
+	return div.Val(), tail.Val()
 }
 
 func (d Decimal) Abs() Decimal {

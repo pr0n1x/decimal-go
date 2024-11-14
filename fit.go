@@ -71,7 +71,7 @@ func (f Fit) Mul(rhs Fit) (Fit, bool) {
 }
 
 func (f Fit) Div(rhs Fit) (Fit, bool) {
-	return f.Decimal.Div(rhs.Decimal).Fit(f.Size)
+	return f.Decimal.Quo(rhs.Decimal).Fit(f.Size)
 }
 
 func (f Fit) Mod(rhs Fit) (Fit, bool) {

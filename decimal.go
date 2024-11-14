@@ -112,14 +112,14 @@ func (d Decimal) UInt64() uint64 {
 	if d.p == nil {
 		return 0
 	}
-	return d.p.val.Div(&d.p.val, d.p.exp.multiplierPromiseReadOnly()).Uint64()
+	return d.p.val.Div(&d.p.val, d.p.exp.multiplierOnlyForReadIPromise()).Uint64()
 }
 
 func (d Decimal) Int64() int64 {
 	if d.p == nil {
 		return 0
 	}
-	return d.p.val.Div(&d.p.val, d.p.exp.multiplierPromiseReadOnly()).Int64()
+	return d.p.val.Div(&d.p.val, d.p.exp.multiplierOnlyForReadIPromise()).Int64()
 }
 
 // FromUnits creates Decimal from a raw *big.Int value and a precision.
@@ -140,14 +140,14 @@ func FromUnitsInt64(val int64, precision Precision) Decimal {
 // FromUInt64 creates Decimal using uint64 as an integer part of the value.
 func FromUInt64(val uint64, precision Precision) Decimal {
 	value := (&big.Int{}).SetUint64(val)
-	value.Mul(value, precision.multiplierPromiseReadOnly())
+	value.Mul(value, precision.multiplierOnlyForReadIPromise())
 	return Decimal{p: NewDecimalMut(value, precision)}
 }
 
 // FromInt64 creates Decimal using int64 as an integer part of the value.
 func FromInt64(val int64, precision Precision) Decimal {
 	value := (&big.Int{}).SetInt64(val)
-	value.Mul(value, precision.multiplierPromiseReadOnly())
+	value.Mul(value, precision.multiplierOnlyForReadIPromise())
 	return Decimal{p: NewDecimalMut(value, precision)}
 }
 

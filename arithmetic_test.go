@@ -7,6 +7,11 @@ import (
 	"testing"
 )
 
+type testFrac struct {
+	n Decimal // n
+	d Decimal // d
+}
+
 func Test_Add_DifferentPrecision(t *testing.T) {
 	a := MustParse("1.100001001", 9)
 	b := MustParse("2.200002", 6)
@@ -38,19 +43,19 @@ func Test_Mul_Fractional(t *testing.T) {
 	}
 }
 
-func Test_Div_Fractional(t *testing.T) {
-	res := Nano.MustParse("10").Div(Nano.MustParse("0.5"))
+func Test_Quo_Fractional(t *testing.T) {
+	res := Nano.MustParse("10").Quo(Nano.MustParse("0.5"))
 	if res, expected := res.String(), "20"; res != expected {
 		t.Fatalf("invalid multiplication, expected %s, got %s", expected, res)
 	}
 }
 
-//func Test_Div_FractionRound(t *testing.T) {
-//	res := Nano.FromUInt64(2).Div(Nano.FromUInt64(3)).Round(Nano, HalfUp)
-//	if got, expected := res.String(), "0.666666667"; got != expected {
-//		t.Fatalf("invalid division result last precision digit round: expected %s, got %s", expected, got)
-//	}
-//}
+func Test_Div_FractionRound(t *testing.T) {
+	res := Nano.FromUInt64(2).Div(Nano.FromUInt64(3))
+	if got, expected := res.String(), "0.666666667"; got != expected {
+		t.Fatalf("invalid division result last precision digit round: expected %s, got %s", expected, got)
+	}
+}
 
 func Test_Mod_Fractional(t *testing.T) {
 	res := Nano.MustParse("0.1").Mod(Nano.MustParse("0.03"))
@@ -59,13 +64,38 @@ func Test_Mod_Fractional(t *testing.T) {
 	}
 }
 
-func Test_DivMod_Fractional(t *testing.T) {
-	div, mod := Nano.MustParse("464").DivMod(Nano.MustParse("33"))
-	if res, expected := div.String(), "14"; res != expected {
-		t.Fatalf(`invalid "div" of DivMod operation, expected %s, got %s`, expected, res)
-	}
-	if res, expected := mod.String(), "2"; res != expected {
-		t.Fatalf(`invalid "mod" of DivMod operation, expected %s, got %s`, expected, res)
+func Test_DivMod(t *testing.T) {
+	for _, tc := range []struct {
+		frac testFrac
+		res  string
+		mod  string
+	}{
+		{frac: testFrac{n: Centi.MustParse("5"), d: Centi.MustParse("3")}, res: "1", mod: "2"},
+		{frac: testFrac{n: Centi.MustParse("6.67"), d: Centi.MustParse("3.3")}, res: "2", mod: "0.07"},
+		{frac: testFrac{n: Milli.FromUInt64(2), d: Milli.FromUInt64(3)}, res: "0", mod: "2"},
+		{frac: testFrac{n: Nano.MustParse("464"), d: Nano.MustParse("33")}, res: "14", mod: "2"},
+		{frac: testFrac{n: Nano.MustParse("4.64"), d: Nano.MustParse("3.3")}, res: "1", mod: "1.34"},
+		{frac: testFrac{n: Milli.MustParse("6.6"), d: Milli.MustParse("3")}, res: "2", mod: "0.6"},
+		{frac: testFrac{n: Milli.FromUInt64(5), d: Milli.FromUInt64(3)}, res: "1", mod: "2"},
+	} {
+		{
+			div, rem := tc.frac.n.QuoRem(tc.frac.d)
+			if got, expected := div.String(), tc.res; got != expected {
+				t.Fatalf(`invalid "div" of QuoRem operation, expected %s, got %s`, expected, got)
+			}
+			if got, expected := rem.String(), tc.mod; got != expected {
+				t.Fatalf(`invalid "rem" of QuoRem operation, expected %s, got %s`, expected, got)
+			}
+		}
+		{
+			div, mod := tc.frac.n.DivMod(tc.frac.d)
+			if got, expected := div.String(), tc.res; got != expected {
+				t.Fatalf(`invalid "div" of DivMod operation, expected %s, got %s`, expected, got)
+			}
+			if got, expected := mod.String(), tc.mod; got != expected {
+				t.Fatalf(`invalid "mod" of DivMod operation, expected %s, got %s`, expected, got)
+			}
+		}
 	}
 }
 
@@ -106,33 +136,16 @@ func Test_SumHasMaxPrecision(t *testing.T) {
 }
 
 func Test_DivTail(t *testing.T) {
-	type fraction struct {
-		numerator   Decimal
-		denominator Decimal
-	}
-	for _, frac := range []fraction{
-		{
-			numerator:   MustParse("1.004", Milli),
-			denominator: MustParse("0.6", Milli),
-		},
-		{
-			numerator:   MustParse("1.004", Milli),
-			denominator: MustParse("0.06", Milli),
-		},
-		{
-			numerator:   MustParse("1.000000004", Quecto),
-			denominator: MustParse("0.6", Quecto),
-		},
-		{
-			numerator:   MustParse("39.999999999999999999999999999999", Quecto),
-			denominator: MustParse("131072", Quecto),
-		},
-		{
-			numerator:   MustParse("1.2", Milli),
-			denominator: MustParse("0.6", Milli),
-		},
+	for _, frac := range []testFrac{
+		{n: MustParse("1.004", Milli), d: MustParse("0.6", Milli)},
+		{n: MustParse("1.004", Milli), d: MustParse("0.06", Milli)},
+		{n: MustParse("1.000000004", Quecto), d: MustParse("0.6", Quecto)},
+		{n: MustParse("39.999999999999999999999999999999", Quecto), d: MustParse("131072", Quecto)},
+		{n: MustParse("1.2", Milli), d: MustParse("0.6", Milli)},
+		{n: MustParse("1.998", Milli), d: MustParse("3", Milli)},
+		{n: MustParse("2", Milli), d: MustParse("3", Milli)},
 	} {
-		numerator, denominator := frac.numerator, frac.denominator
+		numerator, denominator := frac.n, frac.d
 		res, tail := numerator.DivTail(denominator)
 		if 2*res.Precision() != tail.Precision() {
 			t.Fatal("invalid DivTail: the tail precision should be twice the result precision")

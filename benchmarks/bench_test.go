@@ -17,7 +17,7 @@ func Benchmark_Immutable_Decimal(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = million.Div(divider)
+		_ = million.Quo(divider)
 	}
 }
 
@@ -42,7 +42,7 @@ func Benchmark_Mutable_Decimal(b *testing.B) {
 	divider := testPrecision.MustParse("33.67")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		millions[i].Var().Div(divider)
+		millions[i].Var().Quo(divider)
 	}
 }
 
@@ -72,7 +72,7 @@ func Benchmark_BigFraction_Div_Decimal(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		results = append(results, rat.Div(three))
+		results = append(results, rat.Quo(three))
 	}
 }
 

@@ -28,7 +28,7 @@ var (
 	}
 )
 
-func (p Precision) multiplierPromiseReadOnly() *big.Int {
+func (p Precision) multiplierOnlyForReadIPromise() *big.Int {
 	switch p {
 	case Z:
 		return zMultiplier

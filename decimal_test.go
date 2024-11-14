@@ -36,10 +36,10 @@ func TestParseNeg(t *testing.T) {
 
 func TestNegativeLtZero(t *testing.T) {
 	n := Nano.MustParse("-1.23")
-	if got, expected := n.Div(Nano.FromUInt64(10)).String(), "-0.123"; got != expected {
+	if got, expected := n.Quo(Nano.FromUInt64(10)).String(), "-0.123"; got != expected {
 		t.Errorf("wrong negative value lower than zero: expected %q, got %q", expected, got)
 	}
-	if got, expected := n.Div(Nano.FromUInt64(100)).String(), "-0.0123"; got != expected {
+	if got, expected := n.Quo(Nano.FromUInt64(100)).String(), "-0.0123"; got != expected {
 		t.Errorf("wrong negative value lower than zero: expected %q, got %q", expected, got)
 	}
 }

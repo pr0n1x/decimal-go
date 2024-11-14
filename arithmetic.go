@@ -47,28 +47,61 @@ func (d *DecimalMut) Sub(rhs Decimal) *DecimalMut {
 func (d *DecimalMut) Mul(rhs Decimal) *DecimalMut {
 	d.coercePrecision(&rhs)
 	d.val.Mul(&d.val, &rhs.p.val)
-	d.val.Div(&d.val, d.exp.multiplierPromiseReadOnly())
+	d.val.Div(&d.val, d.exp.multiplierOnlyForReadIPromise())
 	return d
+}
+
+func (d *DecimalMut) Quo(rhs Decimal) *DecimalMut {
+	d.coercePrecision(&rhs)
+	d.val.Mul(&d.val, d.exp.multiplierOnlyForReadIPromise())
+	d.val.Quo(&d.val, &rhs.p.val)
+	return d
+}
+
+func (d *DecimalMut) QuoRem(rhs Decimal, rem *DecimalMut) (*DecimalMut, *DecimalMut) {
+	d.coercePrecision(&rhs)
+	if rem == nil {
+		rem = &DecimalMut{exp: d.exp, val: *big.NewInt(0)}
+	} else {
+		*rem = DecimalMut{exp: d.exp, val: *big.NewInt(0)}
+	}
+	d.val.QuoRem(&d.val, &rhs.p.val, &rem.val)
+	d.val.Mul(&d.val, d.exp.multiplierOnlyForReadIPromise())
+	return d, rem
 }
 
 func (d *DecimalMut) Div(rhs Decimal) *DecimalMut {
 	d.coercePrecision(&rhs)
-	d.val.Mul(&d.val, d.exp.multiplierPromiseReadOnly())
-	d.val.Div(&d.val, &rhs.p.val)
+	d.val.Mul(&d.val, d.exp.multiplierOnlyForReadIPromise())
+	rem := big.Int{}
+	d.val.QuoRem(&d.val, &rhs.p.val, &rem)
+	if sign := rem.Sign(); sign != 0 {
+		one := big.Int{} // on stack
+		one.SetInt64(int64(sign))
+		d.val.Add(&d.val, &one)
+	}
 	return d
 }
 
 // DivTail returns a division result and a tail (residual/remainder related to a precision).
+// For the operation `res, tail := x.DivTail(y)`
+// there is a valid equation `x = (res - tail) * y`.
+// e.g. for operation using Milli precision:
+// `res, tail := Milli.FromUint64(2).DivTail(Milli.FromUint64(3))`,
+// result and tail are:
+// res = 0.666
+// tail = 0.002,
+// 0.666 * 2 = 1.998
+// 1.998 + 0.002 = 2.
 func (d *DecimalMut) DivTail(rhs Decimal, tail *DecimalMut) (*DecimalMut, *DecimalMut) {
 	d.coercePrecision(&rhs)
-	tailAlloc := DecimalMut{exp: d.exp * 2, val: *big.NewInt(0)}
 	if tail == nil {
-		tail = &tailAlloc
+		tail = &DecimalMut{exp: d.exp * 2, val: *big.NewInt(0)}
 	} else {
-		*tail = tailAlloc
+		*tail = DecimalMut{exp: d.exp * 2, val: *big.NewInt(0)}
 	}
-	d.val.Mul(&d.val, d.exp.multiplierPromiseReadOnly())
-	d.val.DivMod(&d.val, &rhs.p.val, &tail.val)
+	d.val.Mul(&d.val, d.exp.multiplierOnlyForReadIPromise())
+	d.val.QuoRem(&d.val, &rhs.p.val, &tail.val)
 	return d, tail
 }
 
@@ -80,10 +113,11 @@ func (d *DecimalMut) Mod(rhs Decimal) *DecimalMut {
 
 func (d *DecimalMut) DivMod(rhs Decimal, m *DecimalMut) (*DecimalMut, *DecimalMut) {
 	d.coercePrecision(&rhs)
-	precisionMultiplier := d.exp.multiplierPromiseReadOnly()
-	aValue := (&big.Int{}).Mul(&d.val, precisionMultiplier)
-	bValue := (&big.Int{}).Mul(&rhs.p.val, precisionMultiplier)
-	d.val.DivMod(aValue, bValue, &m.val)
+	precisionMultiplier := d.exp.multiplierOnlyForReadIPromise()
+	var a, b big.Int
+	a.Mul(&d.val, precisionMultiplier)
+	b.Mul(&rhs.p.val, precisionMultiplier)
+	d.val.DivMod(&a, &b, &m.val)
 	d.val.Mul(&d.val, precisionMultiplier)
 	m.val.Div(&m.val, precisionMultiplier)
 	return d, m
