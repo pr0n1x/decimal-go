@@ -72,19 +72,24 @@ func TestDecimalMutNilPointer(t *testing.T) {
 
 func TestRescaleReminder(t *testing.T) {
 	for _, tc := range []struct {
-		numberString string
-		expectedInt  string
-		expectedFrac string
+		number    Decimal
+		rescaleTo Precision
+		rescaled  string
+		remainder string
 	}{
-		{numberString: "123.456", expectedInt: "1234", expectedFrac: "56"},
-		{numberString: "-123.456", expectedInt: "-1234", expectedFrac: "-56"},
+		{number: MustParse("123.456", Milli), rescaleTo: Deci, rescaled: "1234", remainder: "0.056"},
+		{number: MustParse("-123.456", Milli), rescaleTo: Deci, rescaled: "-1234", remainder: "-0.056"},
+		{number: MustParse("-123.456", Milli), rescaleTo: Micro, rescaled: "-123456000", remainder: "0"},
 	} {
-		rescaled, rem := Milli.MustParse(tc.numberString).RescaleRem(1)
-		if got, expected := rescaled.Units().String(), tc.expectedInt; got != expected {
+		rescaled, remainder := tc.number.RescaleRem(tc.rescaleTo)
+		if got, expected := rescaled.Units().String(), tc.rescaled; got != expected {
 			t.Fatalf("invalid rescaled value: expected '%s', got '%s'", expected, got)
 		}
-		if got, expected := rem.Units().String(), tc.expectedFrac; got != expected {
-			t.Fatalf("invalid rescaled reminder: expected '%s', got '%s'", expected, got)
+		if got, expected := remainder.Precision(), tc.number.Precision(); got != expected {
+			t.Fatal("invalid remainder precision")
+		}
+		if got, expected := remainder.String(), tc.remainder; got != expected {
+			t.Fatalf("invalid rescale reminder: expected '%s', got '%s'", expected, got)
 		}
 	}
 }

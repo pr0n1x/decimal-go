@@ -13,7 +13,7 @@ type DecimalMut struct {
 
 var ErrInvalidDecimalString = werr.New("invalid decimal value string")
 
-// NewDecimalMut creates *DecimalMut from a raw *big.Int value and a precision.
+// NewDecimalMut creates *DecimalMut from a raw *big.Int value and a rescaleTo.
 func NewDecimalMut(val *big.Int, precision Precision) *DecimalMut {
 	d := DecimalMut{
 		exp: precision,
@@ -28,14 +28,15 @@ func (d *DecimalMut) Val() Decimal {
 }
 
 func (d *DecimalMut) RescaleRem(p Precision) (remainder Decimal) {
+	remainder.p = &DecimalMut{exp: 0, val: big.Int{}}
 	if d == nil {
 		return
 	}
+	remainder.p.exp = d.exp
 	if p > d.exp {
 		d.val.Mul(&d.val, (p - d.exp).multiplierOnlyForReadIPromise())
 	} else if p < d.exp {
 		multiplier := (d.exp - p).multiplierOnlyForReadIPromise()
-		remainder.p = &DecimalMut{exp: d.exp, val: big.Int{}}
 		rem := &remainder.p.val
 		d.val.QuoRem(&d.val, multiplier, rem)
 	}

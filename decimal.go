@@ -36,6 +36,9 @@ func (d Decimal) Var() *DecimalMut {
 
 // Precision exp - max decimals digits.
 func (d Decimal) Precision() Precision {
+	if d.p == nil {
+		return 0
+	}
 	return d.p.exp
 }
 
@@ -59,9 +62,14 @@ func (d Decimal) Rescale(p Precision) Decimal {
 }
 
 func (d Decimal) RescaleRem(p Precision) (rescaled, remainder Decimal) {
+	if d.p == nil {
+		rescaled = Decimal{p: &DecimalMut{exp: p, val: big.Int{}}}
+		remainder = Decimal{p: &DecimalMut{exp: 0, val: big.Int{}}}
+		return
+	}
 	rescaled = d.p.Copy().Val()
 	remainder = rescaled.p.RescaleRem(p)
-	return rescaled, remainder
+	return
 }
 
 func (d Decimal) Copy() Decimal {
@@ -122,29 +130,29 @@ func (d Decimal) Int64() int64 {
 	return d.p.val.Div(&d.p.val, d.p.exp.multiplierOnlyForReadIPromise()).Int64()
 }
 
-// FromUnits creates Decimal from a raw *big.Int value and a precision.
+// FromUnits creates Decimal from a raw *big.Int value and a rescaleTo.
 func FromUnits(val *big.Int, precision Precision) Decimal {
 	return Decimal{p: NewDecimalMut(val, precision)}
 }
 
-// FromUnitsUInt64 creates Decimal from a raw uint64 value and a precision.
+// FromUnitsUInt64 creates Decimal from a raw uint64 value and a rescaleTo.
 func FromUnitsUInt64(val uint64, precision Precision) Decimal {
 	return FromUnits((&big.Int{}).SetUint64(val), precision)
 }
 
-// FromUnitsInt64 creates Decimal from a raw int64 value and a precision.
+// FromUnitsInt64 creates Decimal from a raw int64 value and a rescaleTo.
 func FromUnitsInt64(val int64, precision Precision) Decimal {
 	return FromUnits((&big.Int{}).SetInt64(val), precision)
 }
 
-// FromUInt64 creates Decimal using uint64 as an integer part of the value.
+// FromUInt64 creates Decimal using uint64 as an rescaled part of the value.
 func FromUInt64(val uint64, precision Precision) Decimal {
 	value := (&big.Int{}).SetUint64(val)
 	value.Mul(value, precision.multiplierOnlyForReadIPromise())
 	return Decimal{p: NewDecimalMut(value, precision)}
 }
 
-// FromInt64 creates Decimal using int64 as an integer part of the value.
+// FromInt64 creates Decimal using int64 as an rescaled part of the value.
 func FromInt64(val int64, precision Precision) Decimal {
 	value := (&big.Int{}).SetInt64(val)
 	value.Mul(value, precision.multiplierOnlyForReadIPromise())
@@ -203,7 +211,7 @@ func MustParse(val string, precision Precision) Decimal {
 	return must(Parse(val, precision))
 }
 
-// ParseUnits parse a string of whole number containing integer and fractional part of the value.
+// ParseUnits parse a string of whole number containing rescaled and remainder part of the value.
 func ParseUnits(val string, precision Precision) (Decimal, error) {
 	if bn, ok := (&big.Int{}).SetString(val, 10); ok {
 		return FromUnits(bn, precision), nil

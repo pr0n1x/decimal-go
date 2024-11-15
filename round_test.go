@@ -4,7 +4,7 @@ import "testing"
 
 type roundTestCase struct {
 	n Decimal   // number.
-	r Precision // round precision.
+	r Precision // round rescaleTo.
 	e string    // expected.
 }
 

@@ -53,7 +53,7 @@ func Test_Quo_Fractional(t *testing.T) {
 func Test_Div_FractionRound(t *testing.T) {
 	res := Nano.FromUInt64(2).Div(Nano.FromUInt64(3))
 	if got, expected := res.String(), "0.666666667"; got != expected {
-		t.Fatalf("invalid division result last precision digit round: expected %s, got %s", expected, got)
+		t.Fatalf("invalid division result last rescaleTo digit round: expected %s, got %s", expected, got)
 	}
 }
 
@@ -143,16 +143,39 @@ func Test_DivTail(t *testing.T) {
 		{n: MustParse("39.999999999999999999999999999999", Quecto), d: MustParse("131072", Quecto)},
 		{n: MustParse("1.2", Milli), d: MustParse("0.6", Milli)},
 		{n: MustParse("1.998", Milli), d: MustParse("3", Milli)},
-		{n: MustParse("2", Milli), d: MustParse("3", Milli)},
+		{n: MustParse("-2", Milli), d: MustParse("3", Milli)},
 	} {
 		numerator, denominator := frac.n, frac.d
 		res, tail := numerator.DivTail(denominator)
 		if 2*res.Precision() != tail.Precision() {
-			t.Fatal("invalid DivTail: the tail precision should be twice the result precision")
+			t.Fatal("invalid DivTail: the tail rescaleTo should be twice the result rescaleTo")
 		}
 		res.Var().Rescale(res.Precision() * 2)
 		if rev := res.Mul(denominator).Add(tail); rev.Cmp(numerator) != 0 {
 			t.Fatalf("invalid DivTail: reversed = result * denuminator, but: %s != %s * %s",
+				rev.String(), res.String(), denominator.String())
+		}
+	}
+}
+
+func Test_QuoTail(t *testing.T) {
+	for _, frac := range []testFrac{
+		{n: MustParse("1.004", Milli), d: MustParse("0.6", Milli)},
+		{n: MustParse("1.004", Milli), d: MustParse("0.06", Milli)},
+		{n: MustParse("1.000000004", Quecto), d: MustParse("0.6", Quecto)},
+		{n: MustParse("39.999999999999999999999999999999", Quecto), d: MustParse("131072", Quecto)},
+		{n: MustParse("1.2", Milli), d: MustParse("0.6", Milli)},
+		{n: MustParse("1.998", Milli), d: MustParse("3", Milli)},
+		{n: MustParse("-2", Milli), d: MustParse("3", Milli)},
+	} {
+		numerator, denominator := frac.n, frac.d
+		res, tail := numerator.QuoTail(denominator)
+		if 2*res.Precision() != tail.Precision() {
+			t.Fatal("invalid DivTail: the tail rescaleTo should be twice the result rescaleTo")
+		}
+		res.Var().Rescale(res.Precision() * 2)
+		if rev := res.Mul(denominator).Add(tail); rev.Cmp(numerator) != 0 {
+			t.Fatalf("invalid QuoTail: reversed = result * denuminator, but: %s != %s * %s",
 				rev.String(), res.String(), denominator.String())
 		}
 	}

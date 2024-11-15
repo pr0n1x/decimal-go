@@ -43,6 +43,11 @@ func (d Decimal) DivMod(rhs Decimal) (div, mod Decimal) {
 	return dm.Val(), tm.Val()
 }
 
+func (d Decimal) QuoTail(rhs Decimal) (Decimal, Decimal) {
+	div, tail := d.lhs().QuoTail(rhs, nil)
+	return div.Val(), tail.Val()
+}
+
 func (d Decimal) DivTail(rhs Decimal) (Decimal, Decimal) {
 	div, tail := d.lhs().DivTail(rhs, nil)
 	return div.Val(), tail.Val()
