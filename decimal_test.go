@@ -77,9 +77,9 @@ func TestRescaleReminder(t *testing.T) {
 		rescaled  string
 		remainder string
 	}{
-		{number: MustParse("123.456", Milli), rescaleTo: Deci, rescaled: "1234", remainder: "0.056"},
-		{number: MustParse("-123.456", Milli), rescaleTo: Deci, rescaled: "-1234", remainder: "-0.056"},
-		{number: MustParse("-123.456", Milli), rescaleTo: Micro, rescaled: "-123456000", remainder: "0"},
+		{number: Milli.MustParse("123.456"), rescaleTo: Deci, rescaled: "1234", remainder: "0.056"},
+		{number: Milli.MustParse("-123.456"), rescaleTo: Deci, rescaled: "-1234", remainder: "-0.056"},
+		{number: Milli.MustParse("-123.456"), rescaleTo: Micro, rescaled: "-123456000", remainder: "0"},
 	} {
 		rescaled, remainder := tc.number.RescaleRem(tc.rescaleTo)
 		if got, expected := rescaled.Units().String(), tc.rescaled; got != expected {
@@ -90,6 +90,29 @@ func TestRescaleReminder(t *testing.T) {
 		}
 		if got, expected := remainder.String(), tc.remainder; got != expected {
 			t.Fatalf("invalid rescale reminder: expected '%s', got '%s'", expected, got)
+		}
+	}
+}
+
+func TestParseLimitedPrecision(t *testing.T) {
+	for _, tc := range []struct {
+		n  string    // number string
+		p  Precision // possible precision, depends from autoPrecision
+		li bool      // limited precision
+		ep Precision // expected precision
+		eu string    // expected units value
+	}{
+		{n: "123.456", p: 0, li: false, ep: Milli, eu: "123456"},
+		{n: "123.456", p: Centi, li: false, ep: Milli, eu: "123456"},
+		{n: "123.456", p: Centi, li: true, ep: Centi, eu: "12345"},
+		{n: "123.456", p: Deci, li: true, ep: Deci, eu: "1234"},
+		{n: "123.456", p: Micro, li: false, ep: Micro, eu: "123456000"},
+		{n: "123.456789", p: 0, li: false, ep: Micro, eu: "123456789"},
+		{n: "123.456789", p: Milli, li: true, ep: Milli, eu: "123456"},
+	} {
+		n := must(Parse(tc.n, tc.p, tc.li))
+		if got, expected := n.Units().String(), tc.eu; got != expected {
+			t.Fatalf("invalid parsed units valus: expected '%s', got '%s'", expected, got)
 		}
 	}
 }

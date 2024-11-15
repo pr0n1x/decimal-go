@@ -66,7 +66,7 @@ const testBigFrac = "9183278754354899275983457827.987238674598761250123876845873
 const testBigFracPrecision = 38
 
 func Benchmark_BigFraction_Div_Decimal(b *testing.B) {
-	rat := dec.MustParse(testBigFrac, testBigFracPrecision)
+	rat := dec.MustParse(testBigFrac, testBigFracPrecision, true)
 	three := dec.FromUInt64(3, testBigFracPrecision)
 	results := make([]dec.Decimal, 1_000_000)
 
@@ -88,7 +88,7 @@ func Benchmark_BigFraction_Div_BigRat(b *testing.B) {
 }
 
 func Benchmark_BigFraction_Mul_Decimal(b *testing.B) {
-	rat := dec.MustParse(testBigFrac, testBigFracPrecision)
+	rat := dec.MustParse(testBigFrac, testBigFracPrecision, true)
 	three := dec.FromUInt64(3, testBigFracPrecision)
 	results := make([]dec.Decimal, 1_000_000)
 

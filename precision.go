@@ -62,9 +62,9 @@ func (p Precision) FromUInt64(val uint64) Decimal { return FromUInt64(val, p) }
 
 func (p Precision) FromInt64(val int64) Decimal { return FromInt64(val, p) }
 
-func (p Precision) Parse(val string) (Decimal, error) { return Parse(val, p) }
+func (p Precision) Parse(val string) (Decimal, error) { return Parse(val, p, true) }
 
-func (p Precision) MustParse(val string) Decimal { return MustParse(val, p) }
+func (p Precision) MustParse(val string) Decimal { return MustParse(val, p, true) }
 
 func (p Precision) ParseUnits(val string) (Decimal, error) { return ParseUnits(val, p) }
 

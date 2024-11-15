@@ -160,10 +160,10 @@ func FromInt64(val int64, precision Precision) Decimal {
 }
 
 // Parse parses decimal number.
-func Parse(val string, precision Precision) (Decimal, error) {
+func Parse(val string, precision Precision, limitPrecision bool) (Decimal, error) {
 	s := strings.SplitN(val, ".", 2)
 
-	if len(s) == 0 {
+	if len(s) == 0 || len(s) > 2 {
 		return Decimal{}, ErrInvalidDecimalString
 	}
 
@@ -172,14 +172,19 @@ func Parse(val string, precision Precision) (Decimal, error) {
 		return Decimal{}, ErrInvalidDecimalString
 	}
 
-	hi = hi.Mul(hi, (&big.Int{}).Exp(big.NewInt(10), big.NewInt(int64(precision)), nil))
-
-	if len(s) == 2 {
+	if len(s) < 2 {
+		hi = hi.Mul(hi, (&big.Int{}).Exp(big.NewInt(10), big.NewInt(int64(precision)), nil))
+	} else {
 		loStr := s[1]
 		// lo can have max {decimals} digits.
 		if len(loStr) > int(precision) {
-			loStr = loStr[:precision]
+			if limitPrecision {
+				loStr = loStr[:precision]
+			} else {
+				precision = Precision(len(loStr))
+			}
 		}
+		hi = hi.Mul(hi, (&big.Int{}).Exp(big.NewInt(10), big.NewInt(int64(precision)), nil))
 
 		leadZeroes := 0
 		for _, sym := range loStr {
@@ -207,8 +212,8 @@ func Parse(val string, precision Precision) (Decimal, error) {
 }
 
 // MustParse the same as ParsePrecise but panics on error.
-func MustParse(val string, precision Precision) Decimal {
-	return must(Parse(val, precision))
+func MustParse(val string, precision Precision, limitedPrecision bool) Decimal {
+	return must(Parse(val, precision, limitedPrecision))
 }
 
 // ParseUnits parse a string of whole number containing rescaled and remainder part of the value.

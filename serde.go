@@ -41,7 +41,7 @@ func unmarshalText[T typePrecisionWrapper](d *T, data []byte) error {
 		return errors.New("invalid decimal number")
 	}
 
-	coins, err := Parse(string(data), (*d).TypePrecision())
+	coins, err := Parse(string(data), (*d).TypePrecision(), true)
 	if err != nil {
 		return err
 	}

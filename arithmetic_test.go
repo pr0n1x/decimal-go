@@ -13,8 +13,8 @@ type testFrac struct {
 }
 
 func Test_Add_DifferentPrecision(t *testing.T) {
-	a := MustParse("1.100001001", 9)
-	b := MustParse("2.200002", 6)
+	a := MustParse("1.100001001", 9, true)
+	b := MustParse("2.200002", 6, true)
 	res := a.Add(b)
 	if res.Units().Uint64() != 3_300_003_001 {
 		t.Fatal("invalid add two numbers with different precisions")
@@ -25,8 +25,8 @@ func Test_Add_DifferentPrecision(t *testing.T) {
 }
 
 func Test_AddNeg(t *testing.T) {
-	a := MustParse("3.300003001", 9)
-	b := MustParse("-2.200002", 6)
+	a := MustParse("3.300003001", 9, true)
+	b := MustParse("-2.200002", 6, true)
 	res := a.Add(b)
 	if res.Units().Uint64() != 1_100_001_001 {
 		t.Fatal("invalid add negative number")
@@ -137,13 +137,13 @@ func Test_SumHasMaxPrecision(t *testing.T) {
 
 func Test_DivTail(t *testing.T) {
 	for _, frac := range []testFrac{
-		{n: MustParse("1.004", Milli), d: MustParse("0.6", Milli)},
-		{n: MustParse("1.004", Milli), d: MustParse("0.06", Milli)},
-		{n: MustParse("1.000000004", Quecto), d: MustParse("0.6", Quecto)},
-		{n: MustParse("39.999999999999999999999999999999", Quecto), d: MustParse("131072", Quecto)},
-		{n: MustParse("1.2", Milli), d: MustParse("0.6", Milli)},
-		{n: MustParse("1.998", Milli), d: MustParse("3", Milli)},
-		{n: MustParse("-2", Milli), d: MustParse("3", Milli)},
+		{n: Milli.MustParse("1.004"), d: Milli.MustParse("0.6")},
+		{n: Milli.MustParse("1.004"), d: Milli.MustParse("0.06")},
+		{n: Quecto.MustParse("1.000000004"), d: Quecto.MustParse("0.6")},
+		{n: Quecto.MustParse("39.999999999999999999999999999999"), d: Quecto.MustParse("131072")},
+		{n: Milli.MustParse("1.2"), d: Milli.MustParse("0.6")},
+		{n: Milli.MustParse("1.998"), d: Milli.MustParse("3")},
+		{n: Milli.MustParse("-2"), d: Milli.MustParse("3")},
 	} {
 		numerator, denominator := frac.n, frac.d
 		res, tail := numerator.DivTail(denominator)
@@ -160,13 +160,13 @@ func Test_DivTail(t *testing.T) {
 
 func Test_QuoTail(t *testing.T) {
 	for _, frac := range []testFrac{
-		{n: MustParse("1.004", Milli), d: MustParse("0.6", Milli)},
-		{n: MustParse("1.004", Milli), d: MustParse("0.06", Milli)},
-		{n: MustParse("1.000000004", Quecto), d: MustParse("0.6", Quecto)},
-		{n: MustParse("39.999999999999999999999999999999", Quecto), d: MustParse("131072", Quecto)},
-		{n: MustParse("1.2", Milli), d: MustParse("0.6", Milli)},
-		{n: MustParse("1.998", Milli), d: MustParse("3", Milli)},
-		{n: MustParse("-2", Milli), d: MustParse("3", Milli)},
+		{n: Milli.MustParse("1.004"), d: Milli.MustParse("0.6")},
+		{n: Milli.MustParse("1.004"), d: Milli.MustParse("0.06")},
+		{n: Quecto.MustParse("1.000000004"), d: Quecto.MustParse("0.6")},
+		{n: Quecto.MustParse("39.999999999999999999999999999999"), d: Quecto.MustParse("131072")},
+		{n: Milli.MustParse("1.2"), d: Milli.MustParse("0.6")},
+		{n: Milli.MustParse("1.998"), d: Milli.MustParse("3")},
+		{n: Milli.MustParse("-2"), d: Milli.MustParse("3")},
 	} {
 		numerator, denominator := frac.n, frac.d
 		res, tail := numerator.QuoTail(denominator)
