@@ -4,7 +4,7 @@ import "testing"
 
 type roundTestCase struct {
 	n Decimal   // number.
-	r Precision // round rescaleTo.
+	r Precision // target precision.
 	e string    // expected.
 }
 
@@ -25,7 +25,7 @@ func Test_RoundHalf(t *testing.T) {
 		{n: Nano.MustParse(neg), r: 0, e: "-1"},
 	} {
 		if got, expected := tc.n.Round(tc.r, HalfUp).String(), tc.e; got != expected {
-			t.Fatalf("invalid Round Up, expected %s, got %s", expected, got)
+			t.Fatalf("invalid Round HalfUp, expected %s, got %s", expected, got)
 		}
 	}
 }
@@ -41,11 +41,8 @@ func Test_RoundHalfUp(t *testing.T) {
 		{n: Milli.MustParse("1.5"), r: 0, e: "2"},
 		{n: Milli.MustParse("-1.5"), r: 0, e: "-1"},
 	} {
-		if b := tc.e == "1"; b {
-			_ = b
-		}
 		if got, expected := tc.n.Round(tc.r, HalfUp).String(), tc.e; got != expected {
-			t.Fatalf("invalid Round Up, expected %s, got %s", expected, got)
+			t.Fatalf("invalid Round HalfUp, expected %s, got %s", expected, got)
 		}
 	}
 }
@@ -61,11 +58,8 @@ func Test_RoundHalfDown(t *testing.T) {
 		{n: Milli.MustParse("1.5"), r: 0, e: "1"},
 		{n: Milli.MustParse("-1.5"), r: 0, e: "-2"},
 	} {
-		if b := tc.e == "1"; b {
-			_ = b
-		}
 		if got, expected := tc.n.Round(tc.r, HalfDown).String(), tc.e; got != expected {
-			t.Fatalf("invalid Round Up, expected %s, got %s", expected, got)
+			t.Fatalf("invalid Round HalfDown, expected %s, got %s", expected, got)
 		}
 	}
 }
@@ -108,9 +102,6 @@ func Test_RoundModeAwayFromZero(t *testing.T) {
 		{n: Nano.MustParse(nns), r: 2, e: "-1.13"},
 		{n: Nano.MustParse(nns), r: 0, e: "-2"},
 	} {
-		if b := tc.e == "-1.12346"; b {
-			_ = b
-		}
 		if got, expected := tc.n.Round(tc.r, AwayFromZero).String(), tc.e; got != expected {
 			t.Fatalf("invalid Round, expected %s, got %s", expected, got)
 		}

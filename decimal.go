@@ -34,7 +34,7 @@ func (d Decimal) Var() *DecimalMut {
 	return d.p
 }
 
-// Precision exp - max decimals digits.
+// Precision returns the number of decimal places after the point.
 func (d Decimal) Precision() Precision {
 	if d.p == nil {
 		return 0
@@ -42,7 +42,7 @@ func (d Decimal) Precision() Precision {
 	return d.p.exp
 }
 
-// Units raw big int.
+// Units returns a copy of the raw *big.Int value.
 func (d Decimal) Units() *big.Int {
 	if d.p == nil {
 		return big.NewInt(0)
@@ -130,36 +130,39 @@ func (d Decimal) Int64() int64 {
 	return d.p.val.Div(&d.p.val, d.p.exp.multiplierOnlyForReadIPromise()).Int64()
 }
 
-// FromUnits creates Decimal from a raw *big.Int value and a rescaleTo.
+// FromUnits creates Decimal from a raw *big.Int value and a precision.
 func FromUnits(val *big.Int, precision Precision) Decimal {
 	return Decimal{p: NewDecimalMut(val, precision)}
 }
 
-// FromUnitsUInt64 creates Decimal from a raw uint64 value and a rescaleTo.
+// FromUnitsUInt64 creates Decimal from a raw uint64 value and a precision.
 func FromUnitsUInt64(val uint64, precision Precision) Decimal {
 	return FromUnits((&big.Int{}).SetUint64(val), precision)
 }
 
-// FromUnitsInt64 creates Decimal from a raw int64 value and a rescaleTo.
+// FromUnitsInt64 creates Decimal from a raw int64 value and a precision.
 func FromUnitsInt64(val int64, precision Precision) Decimal {
 	return FromUnits((&big.Int{}).SetInt64(val), precision)
 }
 
-// FromUInt64 creates Decimal using uint64 as an rescaled part of the value.
+// FromUInt64 creates Decimal from a uint64, interpreting it as the whole (integer) part of the value.
 func FromUInt64(val uint64, precision Precision) Decimal {
 	value := (&big.Int{}).SetUint64(val)
 	value.Mul(value, precision.multiplierOnlyForReadIPromise())
 	return Decimal{p: NewDecimalMut(value, precision)}
 }
 
-// FromInt64 creates Decimal using int64 as an rescaled part of the value.
+// FromInt64 creates Decimal from an int64, interpreting it as the whole (integer) part of the value.
 func FromInt64(val int64, precision Precision) Decimal {
 	value := (&big.Int{}).SetInt64(val)
 	value.Mul(value, precision.multiplierOnlyForReadIPromise())
 	return Decimal{p: NewDecimalMut(value, precision)}
 }
 
-// Parse parses decimal number.
+// Parse parses a decimal number string.
+// If the fractional part has more digits than the given precision,
+// the extra digits are truncated when limitPrecision is true;
+// otherwise the precision is extended to fit the whole fractional part.
 func Parse(val string, precision Precision, limitPrecision bool) (Decimal, error) {
 	s := strings.SplitN(val, ".", 2)
 
@@ -176,7 +179,7 @@ func Parse(val string, precision Precision, limitPrecision bool) (Decimal, error
 		hi = hi.Mul(hi, (&big.Int{}).Exp(big.NewInt(10), big.NewInt(int64(precision)), nil))
 	} else {
 		loStr := s[1]
-		// lo can have max {decimals} digits.
+		// lo can have at most {precision} digits.
 		if len(loStr) > int(precision) {
 			if limitPrecision {
 				loStr = loStr[:precision]
@@ -199,7 +202,7 @@ func Parse(val string, precision Precision, limitPrecision bool) (Decimal, error
 			return Decimal{}, ErrInvalidDecimalString
 		}
 
-		digits := len(lo.String()) // =_=.
+		digits := len(lo.String()) // number of significant digits (String drops leading zeroes).
 		lo = lo.Mul(lo, (&big.Int{}).Exp(big.NewInt(10), big.NewInt(int64((int(precision)-leadZeroes)-digits)), nil))
 		if hi.Sign() < 0 && lo.Sign() > 0 {
 			hi = hi.Sub(hi, lo)
@@ -211,12 +214,13 @@ func Parse(val string, precision Precision, limitPrecision bool) (Decimal, error
 	return FromUnits(hi, precision), nil
 }
 
-// MustParse the same as ParsePrecise but panics on error.
+// MustParse is the same as Parse but panics on error.
 func MustParse(val string, precision Precision, limitedPrecision bool) Decimal {
 	return must(Parse(val, precision, limitedPrecision))
 }
 
-// ParseUnits parse a string of whole number containing rescaled and remainder part of the value.
+// ParseUnits parses a string of raw units: an integer that contains
+// both the whole and the fractional parts of the value.
 func ParseUnits(val string, precision Precision) (Decimal, error) {
 	if bn, ok := (&big.Int{}).SetString(val, 10); ok {
 		return FromUnits(bn, precision), nil
@@ -224,7 +228,7 @@ func ParseUnits(val string, precision Precision) (Decimal, error) {
 	return Decimal{}, ErrInvalidDecimalString
 }
 
-// MustParseUnits the same as ParseUnits but panics on error.
+// MustParseUnits is the same as ParseUnits but panics on error.
 func MustParseUnits(val string, precision Precision) Decimal {
 	return must(ParseUnits(val, precision))
 }

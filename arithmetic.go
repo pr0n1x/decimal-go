@@ -83,12 +83,12 @@ func (d *DecimalMut) Div(rhs Decimal) *DecimalMut {
 	return d
 }
 
-// QuoTail returns a division result and a tail (residual/remainder related to a rescaleTo).
-// For the operation `res, tail := x.DivTail(y)`
-// there is a valid equation `res * y = x - tail`.
-// e.g. for operation using Milli rescaleTo:
-// `res, tail := Milli.FromUint64(2).DivTail(Milli.FromUint64(3))`,
-// result and tail are:
+// QuoTail returns a division result and a tail (the residual/remainder related to the precision).
+// For the operation `res, tail := x.QuoTail(y)`
+// the equation `res * y == x - tail` holds.
+// E.g. for an operation using Milli precision:
+// `res, tail := Milli.FromUInt64(2).QuoTail(Milli.FromUInt64(3))`,
+// the result and the tail are:
 // res = 0.666
 // tail = 0.002,
 // 0.666 * 3 == 2 - 0.002 == 1.998
@@ -104,7 +104,8 @@ func (d *DecimalMut) QuoTail(rhs Decimal, tail *DecimalMut) (*DecimalMut, *Decim
 	return d, tail
 }
 
-// DivTail is the same as QuoTail, but based on DivMod big.Int function
+// DivTail is the same as QuoTail, but based on the (big.Int) DivMod method
+// (Euclidean division), so the tail is always non-negative.
 func (d *DecimalMut) DivTail(rhs Decimal, tail *DecimalMut) (*DecimalMut, *DecimalMut) {
 	d.coercePrecision(&rhs)
 	if tail == nil {

@@ -130,13 +130,13 @@ func checkNumberSize(val *big.Int, size uint) bool {
 		bitsLen += 1
 	}
 	if uint((bitsLen+7)>>3) > size {
-		// (bitlen + 7)>>3 - the same as ceil(bitlen/8).
+		// (bitsLen + 7)>>3 is the same as ceil(bitsLen/8).
 		return false
 	}
 	return true
 }
 
-const msgOpResNotFit = "operation result does not fit into 256 bits"
+const msgOpResNotFit = "operation result does not fit into the given bit size"
 
 func mustFit(a Fit, ok bool) Fit {
 	if !ok {

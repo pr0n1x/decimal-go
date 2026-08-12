@@ -70,7 +70,7 @@ func TestDecimalMutNilPointer(t *testing.T) {
 	nilPtr.Add(Z.FromUInt64(2))
 }
 
-func TestRescaleReminder(t *testing.T) {
+func TestRescaleRemainder(t *testing.T) {
 	for _, tc := range []struct {
 		number    Decimal
 		rescaleTo Precision
@@ -89,18 +89,18 @@ func TestRescaleReminder(t *testing.T) {
 			t.Fatal("invalid remainder precision")
 		}
 		if got, expected := remainder.String(), tc.remainder; got != expected {
-			t.Fatalf("invalid rescale reminder: expected '%s', got '%s'", expected, got)
+			t.Fatalf("invalid rescale remainder: expected '%s', got '%s'", expected, got)
 		}
 	}
 }
 
 func TestParseLimitedPrecision(t *testing.T) {
 	for _, tc := range []struct {
-		n  string    // number string
-		p  Precision // possible precision, depends from autoPrecision
-		li bool      // limited precision
-		ep Precision // expected precision
-		eu string    // expected units value
+		n  string    // number string.
+		p  Precision // requested precision (extended when li is false).
+		li bool      // limit precision.
+		ep Precision // expected precision.
+		eu string    // expected units value.
 	}{
 		{n: "123.456", p: 0, li: false, ep: Milli, eu: "123456"},
 		{n: "123.456", p: Centi, li: false, ep: Milli, eu: "123456"},
@@ -112,7 +112,7 @@ func TestParseLimitedPrecision(t *testing.T) {
 	} {
 		n := must(Parse(tc.n, tc.p, tc.li))
 		if got, expected := n.Units().String(), tc.eu; got != expected {
-			t.Fatalf("invalid parsed units valus: expected '%s', got '%s'", expected, got)
+			t.Fatalf("invalid parsed units value: expected '%s', got '%s'", expected, got)
 		}
 	}
 }

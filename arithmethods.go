@@ -62,7 +62,7 @@ func (d Decimal) Neg() Decimal {
 }
 
 func (d Decimal) Cmp(rhs Decimal) int {
-	// reimplement coercePrecision to skip probable copying.
+	// re-implement coercePrecision to avoid unnecessary copying.
 	if rhs.p == nil {
 		rhs.p = &DecimalMut{}
 	}
