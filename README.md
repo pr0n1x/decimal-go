@@ -2,6 +2,40 @@
 
 A small fixed-point decimal library built on top of `math/big`.
 
+## Motivation
+
+`math/big` is powerful, but its three-address, everything-mutates API turns
+even a trivial formula into unreadable code: `new(big.Int).Div(new(big.Int).Mul(a, b), c)`
+instead of just `a.Mul(b).Quo(c)`. This library exists to fix exactly that —
+to provide a simple, readable API without adding any runtime cost on top of `math/big`.
+
+The immutable `Decimal` API lets you write arithmetic as plain chained
+expressions that read like the formula they implement:
+
+```go
+total := price.Mul(quantity).Sub(discount)
+```
+
+The mutable `*DecimalMut` API (via `Var()`) is there for hot paths — it works
+in place, exactly like raw `math/big`, so choosing readability first never
+locks you out of the allocation-free style where it matters:
+
+```go
+total := price.Copy()
+total.Var().Mul(quantity).Sub(discount) // no extra allocations
+```
+
+On top of that, you rarely have to think about scales: in most cases the
+precision is coerced automatically. Whenever operands have different
+precisions, they are aligned to the highest one — mixing values of different
+scales in one formula just works:
+
+```go
+price := dec.Nano.MustParse("19.99") // precision 9
+fee := dec.Centi.MustParse("0.05")   // precision 2
+total := price.Add(fee)              // 20.04, precision 9
+```
+
 ```sh
 go get github.com/pr0n1x/decimal-go
 ```
